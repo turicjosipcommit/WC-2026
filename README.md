@@ -1,0 +1,132 @@
+# WC Fantasy 2026
+
+A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts match scores, earns points, and climbs one shared leaderboard.
+
+**Stack:** Next.js · Supabase (Postgres + Auth) · SofaScore scrape via Playwright
+
+## Features
+
+- Magic-link login for ~15 friends (single group, no leagues)
+- Fixture list synced from SofaScore
+- Predictions lock at kickoff
+- Auto scoring when results sync
+- Leaderboard with exact-score count
+
+### Scoring
+
+| Outcome | Points |
+|---------|--------|
+| Exact score | 5 |
+| Correct result + goal difference | 3 |
+| Correct result (W/D/L) | 1 |
+
+## Setup
+
+### 1. Supabase
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run the migration in **SQL Editor**:
+
+   `supabase/migrations/001_initial.sql`
+
+3. In **Authentication → URL configuration**, add:
+   - Site URL: `http://localhost:3000` (and your production URL later)
+   - Redirect URLs: `http://localhost:3000/auth/callback`
+
+4. Copy API keys from **Project Settings → API**
+
+### 2. Environment
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CRON_SECRET` (random string)
+
+### 3. Install & run
+
+```bash
+npm install
+npx playwright install chromium
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000), sign in, then load fixtures:
+
+```bash
+npm run sync:schedule
+```
+
+### 4. Sync results (manual)
+
+```bash
+npm run sync:results
+```
+
+## Cron / automation
+
+### Option A — GitHub Actions (recommended for SofaScore + Playwright)
+
+Add repo secrets:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CRON_SECRET` (optional, for deployed app ping)
+
+The workflow `.github/workflows/sync-results.yml` runs every 30 minutes and:
+
+1. Syncs schedule (best-effort)
+2. Syncs finished/live matches and scores predictions
+
+### Option B — Manual / local cron
+
+On your Mac during the tournament:
+
+```bash
+# crontab -e
+*/30 * * * * cd /Users/josipturic/Projects/wc-fantasy-2026 && /usr/bin/npm run sync:results >> /tmp/wc-sync.log 2>&1
+```
+
+Protect internal routes with header:
+
+```http
+x-cron-secret: YOUR_CRON_SECRET
+```
+
+## Project structure
+
+```
+src/
+  app/                 # Pages + API routes
+  components/          # UI
+  lib/
+    sofascore/         # Playwright client + sync
+    supabase/          # Clients
+    scoring.ts         # Points calculation
+scripts/
+  sync-schedule.ts     # Import all WC fixtures
+  sync-results.ts      # Update scores + award points
+supabase/migrations/   # DB schema
+```
+
+## SofaScore endpoints used
+
+- Tournament `16`, season `58210`
+- `/unique-tournament/16/season/58210/rounds`
+- `/unique-tournament/16/season/58210/events/round/{n}`
+- `/event/{eventId}`
+
+SofaScore has **no official public API**. This app uses browser-authenticated requests for a private friend league. Use at your own risk.
+
+## Invite friends
+
+Share the deployed URL. Each person signs up with email magic link and sets a display name on first login.
+
+## License
+
+Private friend project.
