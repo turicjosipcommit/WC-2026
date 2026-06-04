@@ -2,7 +2,10 @@ import { Suspense } from "react";
 import { isAuthDisabled } from "@/lib/auth-config";
 import { Nav } from "@/components/nav";
 import { FixturesTabs } from "@/components/fixtures-tabs";
-import { groupFixturesByRound } from "@/lib/fixtures-grouping";
+import {
+  groupFixturesByRound,
+  groupOtherPicksByMatch,
+} from "@/lib/fixtures-grouping";
 import { createClient } from "@/lib/supabase/server";
 import { getDataClient } from "@/lib/supabase/data";
 import type { Match, Prediction } from "@/lib/types";
@@ -14,20 +17,37 @@ async function getFixtures() {
     data: { user },
   } = await authClient.auth.getUser();
 
-  const [{ data: matches }, { data: predictions }] = await Promise.all([
+  const [
+    { data: matches },
+    { data: userPredictions },
+    { data: allPredictions },
+    { data: profiles },
+  ] = await Promise.all([
     supabase.from("matches").select("*").order("kickoff_at", { ascending: true }),
     user
       ? supabase.from("predictions").select("*").eq("user_id", user.id)
       : Promise.resolve({ data: [] as Prediction[] }),
+    supabase
+      .from("predictions")
+      .select(
+        "user_id, match_id, pred_home, pred_away, pred_et_home, pred_et_away, pred_pen_home, pred_pen_away, points_awarded, et_points_awarded, pen_points_awarded"
+      ),
+    supabase.from("profiles").select("id, display_name"),
   ]);
 
   const predictionByMatch = new Map(
-    (predictions ?? []).map((p) => [p.match_id, p as Prediction])
+    (userPredictions ?? []).map((p) => [p.match_id, p as Prediction])
+  );
+  const otherPicksByMatch = groupOtherPicksByMatch(
+    (allPredictions ?? []) as Prediction[],
+    profiles ?? [],
+    user?.id
   );
 
   return ((matches ?? []) as Match[]).map((match) => ({
     match,
     prediction: predictionByMatch.get(match.id) ?? null,
+    otherPicks: otherPicksByMatch.get(match.id) ?? [],
   }));
 }
 

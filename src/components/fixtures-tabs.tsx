@@ -14,11 +14,12 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
     <RoundTabs groups={groups} basePath="/fixtures" countLabel="match">
       {(items) => (
         <div className="grid gap-4">
-          {items.map(({ match, prediction }) => (
+          {items.map(({ match, prediction, otherPicks }) => (
             <MatchCard
               key={match.id}
               match={match}
               prediction={prediction}
+              otherPicks={otherPicks}
               predictionsDisabled={predictionsDisabled}
             />
           ))}

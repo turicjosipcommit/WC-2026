@@ -1,4 +1,4 @@
-import { calculatePoints } from "@/lib/scoring";
+import { scorePredictionPhases } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Match } from "@/lib/types";
 import {
@@ -15,10 +15,50 @@ import {
 } from "./mappers";
 import type { SofaScoreEvent } from "./types";
 
+function extractMatchScores(event: SofaScoreEvent) {
+  const homeCurrent = event.homeScore?.current ?? null;
+  const awayCurrent = event.awayScore?.current ?? null;
+  const home90 = event.homeScore?.normaltime ?? homeCurrent;
+  const away90 = event.awayScore?.normaltime ?? awayCurrent;
+  const homePen = event.homeScore?.penalties ?? null;
+  const awayPen = event.awayScore?.penalties ?? null;
+  const wentToPenalties = homePen != null && awayPen != null;
+  const wentToExtraTime =
+    wentToPenalties ||
+    (event.homeScore?.overtime != null && event.homeScore.overtime > 0) ||
+    (event.status.description?.toLowerCase().includes("aet") ?? false);
+
+  return {
+    home_score: homeCurrent,
+    away_score: awayCurrent,
+    home_score_90: home90,
+    away_score_90: away90,
+    home_score_et: wentToExtraTime ? homeCurrent : null,
+    away_score_et: wentToExtraTime ? awayCurrent : null,
+    home_score_pen: homePen,
+    away_score_pen: awayPen,
+    went_to_extra_time: wentToExtraTime,
+    went_to_penalties: wentToPenalties,
+  };
+}
+
 function eventToMatchRow(event: SofaScoreEvent) {
   const status = mapSofaScoreStatus(event.status.type);
-  const homeScore = event.homeScore?.current ?? null;
-  const awayScore = event.awayScore?.current ?? null;
+  const scores =
+    status === "finished"
+      ? extractMatchScores(event)
+      : {
+          home_score: null,
+          away_score: null,
+          home_score_90: null,
+          away_score_90: null,
+          home_score_et: null,
+          away_score_et: null,
+          home_score_pen: null,
+          away_score_pen: null,
+          went_to_extra_time: false,
+          went_to_penalties: false,
+        };
 
   return {
     sofascore_event_id: event.id,
@@ -29,10 +69,9 @@ function eventToMatchRow(event: SofaScoreEvent) {
     round_number: event.roundInfo?.round ?? null,
     kickoff_at: new Date(event.startTimestamp * 1000).toISOString(),
     status,
-    home_score: status === "finished" ? homeScore : null,
-    away_score: status === "finished" ? awayScore : null,
+    ...scores,
     scored_at:
-      status === "finished" && homeScore != null && awayScore != null
+      status === "finished" && scores.home_score != null && scores.away_score != null
         ? new Date().toISOString()
         : null,
   };
@@ -60,11 +99,7 @@ export async function syncScheduleFromSofaScore() {
 }
 
 async function scoreMatchPredictions(match: Match) {
-  if (
-    match.home_score == null ||
-    match.away_score == null ||
-    match.status !== "finished"
-  ) {
+  if (match.status !== "finished") {
     return 0;
   }
 
@@ -80,16 +115,11 @@ async function scoreMatchPredictions(match: Match) {
 
   let scored = 0;
   for (const prediction of predictions ?? []) {
-    const points = calculatePoints(
-      prediction.pred_home,
-      prediction.pred_away,
-      match.home_score,
-      match.away_score
-    );
+    const points = scorePredictionPhases(prediction, match);
 
     const { error: updateError } = await supabase
       .from("predictions")
-      .update({ points_awarded: points })
+      .update(points)
       .eq("id", prediction.id);
 
     if (updateError) {
@@ -129,7 +159,15 @@ async function applyEventUpdate(event: SofaScoreEvent) {
   const isFinished = updated.status === "finished";
   const scoresChanged =
     existing?.home_score !== updated.home_score ||
-    existing?.away_score !== updated.away_score;
+    existing?.away_score !== updated.away_score ||
+    existing?.home_score_90 !== updated.home_score_90 ||
+    existing?.away_score_90 !== updated.away_score_90 ||
+    existing?.home_score_et !== updated.home_score_et ||
+    existing?.away_score_et !== updated.away_score_et ||
+    existing?.home_score_pen !== updated.home_score_pen ||
+    existing?.away_score_pen !== updated.away_score_pen ||
+    existing?.went_to_extra_time !== updated.went_to_extra_time ||
+    existing?.went_to_penalties !== updated.went_to_penalties;
 
   if (isFinished && (!wasFinished || scoresChanged)) {
     const scored = await scoreMatchPredictions(updated as Match);

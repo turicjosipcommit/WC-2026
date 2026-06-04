@@ -23,6 +23,14 @@ export interface Match {
   status: MatchStatus;
   home_score: number | null;
   away_score: number | null;
+  home_score_90: number | null;
+  away_score_90: number | null;
+  home_score_et: number | null;
+  away_score_et: number | null;
+  home_score_pen: number | null;
+  away_score_pen: number | null;
+  went_to_extra_time: boolean;
+  went_to_penalties: boolean;
   scored_at: string | null;
   created_at: string;
   updated_at: string;
@@ -34,9 +42,23 @@ export interface Prediction {
   match_id: string;
   pred_home: number;
   pred_away: number;
+  pred_et_home: number | null;
+  pred_et_away: number | null;
+  pred_pen_home: number | null;
+  pred_pen_away: number | null;
   points_awarded: number | null;
+  et_points_awarded: number | null;
+  pen_points_awarded: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface PointsBreakdown {
+  exact: number;
+  resultAndDiff: number;
+  resultOnly: number;
+  none: number;
+  pending: number;
 }
 
 export interface LeaderboardRow {
@@ -45,6 +67,7 @@ export interface LeaderboardRow {
   total_points: number;
   predictions_count: number;
   exact_scores: number;
+  points_breakdown: PointsBreakdown;
 }
 
 export interface MatchWithPrediction extends Match {

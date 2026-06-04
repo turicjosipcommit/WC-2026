@@ -10,7 +10,8 @@ export function ScoringRules() {
         <li>Result only: {SCORING.resultOnly} pt</li>
       </ul>
       <p className="mt-2 text-slate-500">
-        Picks lock at kickoff. Results sync from SofaScore on a schedule.
+        Picks lock at kickoff. Knockout matches also accept optional extra time and penalty
+        shootout picks, scored with the same rules when those phases are played.
       </p>
     </div>
   );

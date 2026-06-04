@@ -10,8 +10,18 @@ export interface SofaScoreEvent {
   startTimestamp: number;
   homeTeam: { name: string; slug?: string };
   awayTeam: { name: string; slug?: string };
-  homeScore?: { current?: number | null };
-  awayScore?: { current?: number | null };
+  homeScore?: {
+    current?: number | null;
+    normaltime?: number | null;
+    overtime?: number | null;
+    penalties?: number | null;
+  };
+  awayScore?: {
+    current?: number | null;
+    normaltime?: number | null;
+    overtime?: number | null;
+    penalties?: number | null;
+  };
   status: {
     type: SofaScoreStatusType;
     description?: string;

@@ -1,4 +1,4 @@
-import type { Match, Prediction } from "@/lib/types";
+import type { Match, Prediction, Profile } from "@/lib/types";
 
 export type RoundGroup<T> = {
   key: string;
@@ -7,10 +7,75 @@ export type RoundGroup<T> = {
   items: T[];
 };
 
+export type OtherPick = {
+  userId: string;
+  displayName: string;
+  predHome: number;
+  predAway: number;
+  predEtHome: number | null;
+  predEtAway: number | null;
+  predPenHome: number | null;
+  predPenAway: number | null;
+  pointsAwarded: number | null;
+  etPointsAwarded: number | null;
+  penPointsAwarded: number | null;
+};
+
 export type FixtureGroup = RoundGroup<{
   match: Match;
   prediction: Prediction | null;
+  otherPicks: OtherPick[];
 }>;
+
+export function groupOtherPicksByMatch(
+  predictions: Pick<
+    Prediction,
+    | "user_id"
+    | "match_id"
+    | "pred_home"
+    | "pred_away"
+    | "pred_et_home"
+    | "pred_et_away"
+    | "pred_pen_home"
+    | "pred_pen_away"
+    | "points_awarded"
+    | "et_points_awarded"
+    | "pen_points_awarded"
+  >[],
+  profiles: Pick<Profile, "id" | "display_name">[],
+  currentUserId?: string | null
+) {
+  const profileById = new Map(profiles.map((profile) => [profile.id, profile.display_name]));
+  const byMatch = new Map<string, OtherPick[]>();
+
+  for (const prediction of predictions) {
+    if (currentUserId && prediction.user_id === currentUserId) continue;
+
+    const pick: OtherPick = {
+      userId: prediction.user_id,
+      displayName: profileById.get(prediction.user_id) ?? "Unknown",
+      predHome: prediction.pred_home,
+      predAway: prediction.pred_away,
+      predEtHome: prediction.pred_et_home,
+      predEtAway: prediction.pred_et_away,
+      predPenHome: prediction.pred_pen_home,
+      predPenAway: prediction.pred_pen_away,
+      pointsAwarded: prediction.points_awarded,
+      etPointsAwarded: prediction.et_points_awarded,
+      penPointsAwarded: prediction.pen_points_awarded,
+    };
+
+    const list = byMatch.get(prediction.match_id) ?? [];
+    list.push(pick);
+    byMatch.set(prediction.match_id, list);
+  }
+
+  for (const list of byMatch.values()) {
+    list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }
+
+  return byMatch;
+}
 
 export type PickGroup = RoundGroup<{
   prediction: Prediction;

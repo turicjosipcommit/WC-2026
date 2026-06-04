@@ -1,3 +1,4 @@
+import { LeaderboardTableRow } from "@/components/leaderboard-table-row";
 import type { LeaderboardRow } from "@/lib/types";
 
 export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
@@ -23,22 +24,7 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr
-              key={row.user_id}
-              className="border-t border-slate-100"
-            >
-              <td className="px-4 py-3 text-emerald-700">{index + 1}</td>
-              <td className="px-4 py-3 font-medium text-slate-900">
-                {row.display_name}
-              </td>
-              <td className="px-4 py-3 text-lg font-bold text-emerald-600">
-                {row.total_points}
-              </td>
-              <td className="px-4 py-3 text-slate-600">
-                {row.predictions_count}
-              </td>
-              <td className="px-4 py-3 text-slate-600">{row.exact_scores}</td>
-            </tr>
+            <LeaderboardTableRow key={row.user_id} row={row} index={index} />
           ))}
         </tbody>
       </table>
