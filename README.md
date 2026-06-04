@@ -6,7 +6,7 @@ A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts
 
 ## Features
 
-- Magic-link login for ~15 friends (single group, no leagues)
+- Google login for ~15 friends (single group, no leagues)
 - Fixture list synced from SofaScore
 - Predictions lock at kickoff
 - Auto scoring when results sync
@@ -25,15 +25,24 @@ A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts
 ### 1. Supabase
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Run the migration in **SQL Editor**:
+2. Run migrations in **SQL Editor** (in order):
 
-   `supabase/migrations/001_initial.sql`
+   - `supabase/migrations/001_initial.sql`
+   - `supabase/migrations/002_google_profile_names.sql`
 
 3. In **Authentication → URL configuration**, add:
    - Site URL: `http://localhost:3000` (and your production URL later)
    - Redirect URLs: `http://localhost:3000/auth/callback`
 
-4. Copy API keys from **Project Settings → API**
+4. Enable **Google** sign-in (**Authentication → Providers → Google**):
+   - Create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   - Application type: **Web application**
+   - **Authorized JavaScript origins:** `http://localhost:3000` (and your production URL)
+   - **Authorized redirect URIs:** `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+   - Paste Client ID into Supabase and into `.env.local` as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+   - Paste Client Secret into Supabase only (the app uses Google Identity Services + ID tokens)
+
+5. Copy API keys from **Project Settings → API**
 
 ### 2. Environment
 
@@ -46,6 +55,7 @@ Fill in:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 - `CRON_SECRET` (random string)
 
 ### 3. Install & run
@@ -125,7 +135,7 @@ SofaScore has **no official public API**. This app uses browser-authenticated re
 
 ## Invite friends
 
-Share the deployed URL. Each person signs up with email magic link and sets a display name on first login.
+Share the deployed URL. Each person signs in with Google — their Google name appears on the leaderboard.
 
 ## License
 

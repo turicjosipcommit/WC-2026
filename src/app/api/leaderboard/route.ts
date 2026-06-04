@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getDataClient } from "@/lib/supabase/data";
 import type { LeaderboardRow } from "@/lib/types";
 
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = await getDataClient();
 
   const [{ data: profiles, error: profilesError }, { data: predictions, error: predictionsError }] =
     await Promise.all([

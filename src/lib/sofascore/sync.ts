@@ -6,6 +6,7 @@ import {
   fetchEvent,
   fetchRecentEvents,
   fetchUpcomingEvents,
+  closeSofaSession,
 } from "./client";
 import {
   extractGroupName,
@@ -141,33 +142,37 @@ async function applyEventUpdate(event: SofaScoreEvent) {
 export async function syncResultsFromSofaScore() {
   const supabase = createAdminClient();
 
-  const liveCandidates = await supabase
-    .from("matches")
-    .select("sofascore_event_id")
-    .in("status", ["scheduled", "live"])
-    .lte("kickoff_at", new Date().toISOString());
+  try {
+    const liveCandidates = await supabase
+      .from("matches")
+      .select("sofascore_event_id")
+      .in("status", ["scheduled", "live"])
+      .lte("kickoff_at", new Date().toISOString());
 
-  const recent = await fetchRecentEvents();
-  const upcoming = await fetchUpcomingEvents();
-  const candidateIds = new Set<number>([
-    ...recent.map((e) => e.id),
-    ...upcoming.filter((e) => e.status.type === "inprogress").map((e) => e.id),
-    ...(liveCandidates.data ?? []).map((m) => m.sofascore_event_id),
-  ]);
+    const recent = await fetchRecentEvents();
+    const upcoming = await fetchUpcomingEvents();
+    const candidateIds = new Set<number>([
+      ...recent.map((e) => e.id),
+      ...upcoming.filter((e) => e.status.type === "inprogress").map((e) => e.id),
+      ...(liveCandidates.data ?? []).map((m) => m.sofascore_event_id),
+    ]);
 
-  let updated = 0;
-  let scoredPredictions = 0;
+    let updated = 0;
+    let scoredPredictions = 0;
 
-  for (const eventId of candidateIds) {
-    const event = await fetchEvent(eventId);
-    const result = await applyEventUpdate(event);
-    if (result.updated) updated += 1;
-    scoredPredictions += result.scored;
+    for (const eventId of candidateIds) {
+      const event = await fetchEvent(eventId);
+      const result = await applyEventUpdate(event);
+      if (result.updated) updated += 1;
+      scoredPredictions += result.scored;
+    }
+
+    return {
+      checked: candidateIds.size,
+      updated,
+      scoredPredictions,
+    };
+  } finally {
+    await closeSofaSession();
   }
-
-  return {
-    checked: candidateIds.size,
-    updated,
-    scoredPredictions,
-  };
 }

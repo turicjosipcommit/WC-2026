@@ -27,7 +27,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-[radial-gradient(circle_at_top,_#064e3b_0%,_#022c22_35%,_#011a14_100%)] text-emerald-50">
+      <body className="min-h-full bg-gradient-to-b from-emerald-50 via-white to-slate-50 text-slate-900">
         {children}
       </body>
     </html>

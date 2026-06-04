@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getDataClient } from "@/lib/supabase/data";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const round = searchParams.get("round");
   const status = searchParams.get("status");
 
-  const supabase = await createClient();
+  const supabase = await getDataClient();
   let query = supabase
     .from("matches")
     .select("*")

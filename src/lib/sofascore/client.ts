@@ -1,4 +1,4 @@
-import { chromium, type APIRequestContext } from "playwright";
+import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import { SOFASCORE } from "./constants";
 import type {
   SofaScoreEvent,
@@ -6,24 +6,38 @@ import type {
   SofaScoreRoundsResponse,
 } from "./types";
 
-async function createAuthenticatedRequest(): Promise<{
-  request: APIRequestContext;
+type SofaSession = {
+  page: Page;
   close: () => Promise<void>;
-}> {
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
+};
+
+let cachedSession: Promise<SofaSession> | null = null;
+
+async function openSession(): Promise<SofaSession> {
+  const browser: Browser = await chromium.launch({ headless: true });
+  const context: BrowserContext = await browser.newContext({
     userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    locale: "en-US",
   });
   const page = await context.newPage();
 
   await page.goto(`${SOFASCORE.referer}#id:${SOFASCORE.seasonId}`, {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
+    timeout: 60000,
   });
-  await page.waitForTimeout(2000);
+
+  await page
+    .waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/v1/unique-tournament/16/season/58210") &&
+        resp.status() === 200,
+      { timeout: 30000 }
+    )
+    .catch(() => undefined);
 
   return {
-    request: context.request,
+    page,
     close: async () => {
       await context.close();
       await browser.close();
@@ -31,25 +45,43 @@ async function createAuthenticatedRequest(): Promise<{
   };
 }
 
-async function sofaGet<T>(path: string): Promise<T> {
-  const { request, close } = await createAuthenticatedRequest();
+async function getSession(): Promise<SofaSession> {
+  if (!cachedSession) {
+    cachedSession = openSession();
+  }
+  return cachedSession;
+}
 
-  try {
-    const response = await request.get(`${SOFASCORE.baseUrl}${path}`, {
-      headers: {
-        referer: SOFASCORE.referer,
-        "x-requested-with": "XMLHttpRequest",
-      },
+export async function closeSofaSession() {
+  if (cachedSession) {
+    const session = await cachedSession;
+    await session.close();
+    cachedSession = null;
+  }
+}
+
+async function sofaGet<T>(path: string): Promise<T> {
+  const session = await getSession();
+  const url = `${SOFASCORE.baseUrl}${path}`;
+
+  const result = await session.page.evaluate(async (fetchUrl) => {
+    const response = await fetch(fetchUrl, {
+      credentials: "include",
+      headers: { accept: "application/json, text/plain, */*" },
     });
 
-    if (!response.ok()) {
-      throw new Error(`SofaScore ${path} failed: ${response.status()}`);
+    if (!response.ok) {
+      return { ok: false as const, status: response.status, data: null };
     }
 
-    return (await response.json()) as T;
-  } finally {
-    await close();
+    return { ok: true as const, status: response.status, data: await response.json() };
+  }, url);
+
+  if (!result.ok) {
+    throw new Error(`SofaScore ${path} failed: ${result.status}`);
   }
+
+  return result.data as T;
 }
 
 export async function fetchRounds(): Promise<SofaScoreRoundsResponse> {
@@ -91,18 +123,29 @@ export async function fetchEvent(eventId: number): Promise<SofaScoreEvent> {
 }
 
 export async function fetchAllScheduleEvents(): Promise<SofaScoreEvent[]> {
-  const { rounds } = await fetchRounds();
-  const roundNumbers = rounds.map((r) => r.round);
-  const byId = new Map<number, SofaScoreEvent>();
+  try {
+    const { rounds } = await fetchRounds();
+    const roundNumbers = rounds.map((r) => r.round);
+    const byId = new Map<number, SofaScoreEvent>();
 
-  for (const round of roundNumbers) {
-    const events = await fetchEventsForRound(round);
-    for (const event of events) {
-      byId.set(event.id, event);
+    for (const round of roundNumbers) {
+      try {
+        const events = await fetchEventsForRound(round);
+        for (const event of events) {
+          byId.set(event.id, event);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!message.includes(" failed: 404")) {
+          throw error;
+        }
+      }
     }
-  }
 
-  return [...byId.values()].sort(
-    (a, b) => a.startTimestamp - b.startTimestamp
-  );
+    return [...byId.values()].sort(
+      (a, b) => a.startTimestamp - b.startTimestamp
+    );
+  } finally {
+    await closeSofaSession();
+  }
 }

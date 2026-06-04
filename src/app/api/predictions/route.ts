@@ -1,7 +1,12 @@
+import { isAuthDisabled } from "@/lib/auth-config";
+import { ensureUserProfile } from "@/lib/ensure-profile";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
+  if (isAuthDisabled()) {
+    return NextResponse.json({ predictions: [] });
+  }
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,6 +30,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (isAuthDisabled()) {
+    return NextResponse.json(
+      { error: "Login is disabled. Predictions cannot be saved right now." },
+      { status: 403 }
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -62,6 +74,11 @@ export async function POST(request: Request) {
       { error: "Predictions are locked after kickoff" },
       { status: 403 }
     );
+  }
+
+  const profileResult = await ensureUserProfile(supabase, user);
+  if (!profileResult.ok) {
+    return NextResponse.json({ error: profileResult.message }, { status: 400 });
   }
 
   const { data, error } = await supabase
