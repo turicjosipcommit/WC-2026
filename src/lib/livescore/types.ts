@@ -53,3 +53,21 @@ export interface LiveScoreNormalizedEvent {
   homeScorePen: number | null;
   awayScorePen: number | null;
 }
+
+export type LiveScoreGoalType = "goal" | "own_goal" | "penalty";
+
+export interface LiveScoreIncident {
+  Min?: number;
+  MinEx?: number;
+  Nm: number;
+  IT?: number;
+  Pn?: string;
+  Sc?: [number, number];
+  Sor?: number;
+  Incs?: LiveScoreIncident[];
+}
+
+export interface LiveScoreIncidentsResponse {
+  Eid: string;
+  Incs?: Record<string, LiveScoreIncident[]>;
+}

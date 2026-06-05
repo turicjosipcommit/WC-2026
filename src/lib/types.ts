@@ -36,6 +36,23 @@ export interface Match {
   updated_at: string;
 }
 
+export type MatchGoalType = "goal" | "own_goal" | "penalty";
+
+export interface MatchGoal {
+  id: string;
+  match_id: string;
+  minute: number;
+  stoppage_minute: number | null;
+  period: number;
+  team: "home" | "away";
+  player_name: string;
+  goal_type: MatchGoalType;
+  home_score_after: number;
+  away_score_after: number;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Prediction {
   id: string;
   user_id: string;

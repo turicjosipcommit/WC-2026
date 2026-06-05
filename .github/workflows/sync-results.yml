@@ -2,8 +2,8 @@ name: Sync WC results
 
 on:
   schedule:
-    # Every 30 minutes during June–July 2026 (UTC)
-    - cron: "*/30 * * * *"
+    # Every 5 minutes — gated to active match windows (+ fallback at :00/:30 UTC)
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,6 +13,7 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SYNC_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,13 +25,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Sync schedule (daily safety net)
-        if: github.event.schedule != ''
-        run: npm run sync:schedule
-        continue-on-error: true
-
-      - name: Sync results and score predictions
-        run: npm run sync:results
+      - name: Sync results when matches are live or due
+        run: npm run sync:results:if-needed
 
       - name: Ping deployed app sync endpoint (optional)
         if: vars.APP_URL != ''

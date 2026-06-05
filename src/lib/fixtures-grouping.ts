@@ -1,4 +1,4 @@
-import type { Match, Prediction, Profile } from "@/lib/types";
+import type { Match, MatchGoal, Prediction, Profile } from "@/lib/types";
 
 export type RoundGroup<T> = {
   key: string;
@@ -25,7 +25,39 @@ export type FixtureGroup = RoundGroup<{
   match: Match;
   prediction: Prediction | null;
   otherPicks: OtherPick[];
+  goals: MatchGoal[];
 }>;
+
+export type FixtureStatusFilter = "all" | "scheduled" | "active" | "finished";
+
+export const FIXTURE_STATUS_FILTERS: {
+  id: FixtureStatusFilter;
+  label: string;
+}[] = [
+  { id: "all", label: "All" },
+  { id: "scheduled", label: "Scheduled" },
+  { id: "active", label: "Active" },
+  { id: "finished", label: "Finished" },
+];
+
+export function parseFixtureStatusFilter(value: string | null): FixtureStatusFilter {
+  if (value === "scheduled" || value === "active" || value === "finished") {
+    return value;
+  }
+  return "all";
+}
+
+export function matchesFixtureStatusFilter(
+  match: Pick<Match, "status">,
+  filter: FixtureStatusFilter
+) {
+  if (filter === "all") return true;
+  if (filter === "scheduled") {
+    return match.status === "scheduled" || match.status === "postponed";
+  }
+  if (filter === "active") return match.status === "live";
+  return match.status === "finished";
+}
 
 export function groupOtherPicksByMatch(
   predictions: Pick<

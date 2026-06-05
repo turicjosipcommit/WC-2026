@@ -97,10 +97,15 @@ Add repo secrets:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `CRON_SECRET` (optional, for deployed app ping)
 
-The workflow `.github/workflows/sync-results.yml` runs every 30 minutes and:
+The workflow `.github/workflows/sync-results.yml` runs every **5 minutes** (UTC) and only syncs when needed:
 
-1. Syncs schedule (best-effort)
-2. Syncs finished/live matches and scores predictions
+1. **Active window** — any match is `live`, or within 5 minutes before kickoff through 3 hours after (covers ET/pens)
+2. **Fallback** — full sync at **:00** and **:30** each hour (includes a best-effort schedule refresh)
+3. **Manual run** — GitHub “Run workflow” always syncs (`SYNC_FORCE=1`)
+
+Between games the job exits immediately with no LiveScore calls.
+
+`npm run sync:results` still forces a full sync anytime locally.
 
 ### Option B — Manual / local cron
 
@@ -108,7 +113,7 @@ On your Mac during the tournament:
 
 ```bash
 # crontab -e
-*/30 * * * * cd /Users/josipturic/Projects/wc-fantasy-2026 && /usr/bin/npm run sync:results >> /tmp/wc-sync.log 2>&1
+*/5 * * * * cd /Users/josipturic/Projects/wc-fantasy-2026 && /usr/bin/npm run sync:results:if-needed >> /tmp/wc-sync.log 2>&1
 ```
 
 Protect internal routes with header:

@@ -4,8 +4,9 @@ import { useState } from "react";
 import { isKnockoutMatch } from "@/lib/match-phase";
 import type { Match, Prediction } from "@/lib/types";
 
-function ScoreInputRow({
+function ScoreInputGroup({
   label,
+  shortLabel,
   home,
   away,
   onHomeChange,
@@ -13,6 +14,7 @@ function ScoreInputRow({
   optional = false,
 }: {
   label: string;
+  shortLabel?: string;
   home: string;
   away: string;
   onHomeChange: (value: string) => void;
@@ -20,33 +22,39 @@ function ScoreInputRow({
   optional?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <p className="w-full text-xs font-medium uppercase tracking-wide text-slate-500">
-        {label}
-        {optional ? " (optional)" : ""}
+    <div className="min-w-[5.5rem] shrink-0">
+      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+        <span className="sm:hidden">{shortLabel ?? label}</span>
+        <span className="hidden sm:inline">{label}</span>
+        {optional ? (
+          <span className="hidden font-normal normal-case text-slate-400 sm:inline">
+            {" "}
+            (optional)
+          </span>
+        ) : null}
       </p>
-      <label className="grid gap-1 text-sm text-slate-600">
-        Home
+      <div className="flex gap-2">
         <input
           type="number"
           min={0}
           max={20}
           value={home}
           onChange={(e) => onHomeChange(e.target.value)}
-          className="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
+          aria-label={`${label} home`}
+          placeholder="H"
+          className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
         />
-      </label>
-      <label className="grid gap-1 text-sm text-slate-600">
-        Away
         <input
           type="number"
           min={0}
           max={20}
           value={away}
           onChange={(e) => onAwayChange(e.target.value)}
-          className="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
+          aria-label={`${label} away`}
+          placeholder="A"
+          className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
         />
-      </label>
+      </div>
     </div>
   );
 }
@@ -118,59 +126,90 @@ export function PredictionEditor({
   }
 
   return (
-    <div className="space-y-4">
-      <ScoreInputRow
-        label="Full time"
-        home={home}
-        away={away}
-        onHomeChange={setHome}
-        onAwayChange={setAway}
-      />
-      {knockout && (
-        <>
-          <ScoreInputRow
-            label="Extra time"
-            home={etHome}
-            away={etAway}
-            onHomeChange={setEtHome}
-            onAwayChange={setEtAway}
-            optional
-          />
-          <ScoreInputRow
-            label="Penalties"
-            home={penHome}
-            away={penAway}
-            onHomeChange={setPenHome}
-            onAwayChange={setPenAway}
-            optional
-          />
-        </>
-      )}
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          disabled={saving || home === "" || away === ""}
-          onClick={savePrediction}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+    <div className="space-y-1">
+      <div
+        className={
+          knockout
+            ? "flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+            : "flex flex-wrap items-end gap-3"
+        }
+      >
+        <div
+          className={
+            knockout
+              ? "grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-3"
+              : "contents"
+          }
         >
-          {saving ? "Saving..." : saveLabel}
-        </button>
-        {showCancel && onCancel && (
+          <ScoreInputGroup
+            label="Full time"
+            shortLabel="FT"
+            home={home}
+            away={away}
+            onHomeChange={setHome}
+            onAwayChange={setAway}
+          />
+          {knockout && (
+            <>
+              <ScoreInputGroup
+                label="Extra time"
+                shortLabel="ET"
+                home={etHome}
+                away={etAway}
+                onHomeChange={setEtHome}
+                onAwayChange={setEtAway}
+                optional
+              />
+              <ScoreInputGroup
+                label="Penalties"
+                shortLabel="Pens"
+                home={penHome}
+                away={penAway}
+                onHomeChange={setPenHome}
+                onAwayChange={setPenAway}
+                optional
+              />
+            </>
+          )}
+        </div>
+
+        <div
+          className={
+            knockout
+              ? "flex w-full shrink-0 gap-2 sm:ml-auto sm:w-auto"
+              : "flex shrink-0 gap-2"
+          }
+        >
           <button
             type="button"
-            disabled={saving}
-            onClick={onCancel}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+            disabled={saving || home === "" || away === ""}
+            onClick={savePrediction}
+            className={
+              knockout
+                ? "flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50 sm:flex-none"
+                : "rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+            }
           >
-            Cancel
+            {saving ? "Saving..." : saveLabel}
           </button>
-        )}
-        {message && (
-          <p className={`text-sm ${message === "Saved" ? "text-emerald-600" : "text-red-600"}`}>
-            {message}
-          </p>
-        )}
+          {showCancel && onCancel && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={onCancel}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
+
+      {message && (
+        <p className={`text-sm ${message === "Saved" ? "text-emerald-600" : "text-red-600"}`}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }

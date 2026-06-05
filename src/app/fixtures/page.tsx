@@ -8,7 +8,7 @@ import {
 } from "@/lib/fixtures-grouping";
 import { createClient } from "@/lib/supabase/server";
 import { getDataClient } from "@/lib/supabase/data";
-import type { Match, Prediction } from "@/lib/types";
+import type { Match, MatchGoal, Prediction } from "@/lib/types";
 
 async function getFixtures() {
   const supabase = await getDataClient();
@@ -19,11 +19,13 @@ async function getFixtures() {
 
   const [
     { data: matches },
+    { data: matchGoals },
     { data: userPredictions },
     { data: allPredictions },
     { data: profiles },
   ] = await Promise.all([
     supabase.from("matches").select("*").order("kickoff_at", { ascending: true }),
+    supabase.from("match_goals").select("*").order("sort_order", { ascending: true }),
     user
       ? supabase.from("predictions").select("*").eq("user_id", user.id)
       : Promise.resolve({ data: [] as Prediction[] }),
@@ -43,11 +45,18 @@ async function getFixtures() {
     profiles ?? [],
     user?.id
   );
+  const goalsByMatch = new Map<string, MatchGoal[]>();
+  for (const goal of (matchGoals ?? []) as MatchGoal[]) {
+    const list = goalsByMatch.get(goal.match_id) ?? [];
+    list.push(goal);
+    goalsByMatch.set(goal.match_id, list);
+  }
 
   return ((matches ?? []) as Match[]).map((match) => ({
     match,
     prediction: predictionByMatch.get(match.id) ?? null,
     otherPicks: otherPicksByMatch.get(match.id) ?? [],
+    goals: goalsByMatch.get(match.id) ?? [],
   }));
 }
 

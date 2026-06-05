@@ -2,12 +2,13 @@ import { LIVESCORE } from "./constants";
 import { normalizeEvent } from "./mappers";
 import type {
   LiveScoreCompetitionDetails,
+  LiveScoreIncidentsResponse,
   LiveScoreNormalizedEvent,
 } from "./types";
 
 function competitionDetailsUrl() {
-  const { baseUrl, competitionId, projectId, locale } = LIVESCORE;
-  return `${baseUrl}/competition/${competitionId}/details/${projectId}?locale=${locale}`;
+  const { baseUrl, competitionId, projectId, locale, detailsVariant } = LIVESCORE;
+  return `${baseUrl}/competition/${competitionId}/${detailsVariant}/${projectId}?locale=${locale}`;
 }
 
 export function parseLiveScoreKickoff(esd: number): Date {
@@ -92,4 +93,20 @@ export async function fetchUpcomingEvents(): Promise<LiveScoreNormalizedEvent[]>
     (event) =>
       event.statusCode.toUpperCase() === "NS" && event.startTimestamp >= now - 3600
   );
+}
+
+export async function fetchMatchIncidents(
+  eventId: number
+): Promise<LiveScoreIncidentsResponse> {
+  const { baseUrl, locale } = LIVESCORE;
+  const url = `${baseUrl}/incidents/soccer/${eventId}?locale=${locale}`;
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`LiveScore incidents ${eventId} failed: ${response.status}`);
+  }
+
+  return response.json() as Promise<LiveScoreIncidentsResponse>;
 }

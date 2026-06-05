@@ -3,7 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Match } from "@/lib/types";
 import {
   fetchAllScheduleEvents,
+  fetchMatchIncidents,
 } from "./client";
+import { parseGoalsFromIncidents } from "./incidents";
 import { mapLiveScoreStatus } from "./mappers";
 import type { LiveScoreNormalizedEvent } from "./types";
 
@@ -123,6 +125,38 @@ async function scoreMatchPredictions(match: Match) {
   return scored;
 }
 
+async function syncMatchGoals(matchId: string, livescoreEventId: number) {
+  const supabase = createAdminClient();
+  const incidents = await fetchMatchIncidents(livescoreEventId);
+  const goals = parseGoalsFromIncidents(incidents);
+
+  const { error: deleteError } = await supabase
+    .from("match_goals")
+    .delete()
+    .eq("match_id", matchId);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  if (goals.length === 0) {
+    return 0;
+  }
+
+  const { error: insertError } = await supabase.from("match_goals").insert(
+    goals.map((goal) => ({
+      match_id: matchId,
+      ...goal,
+    }))
+  );
+
+  if (insertError) {
+    throw new Error(insertError.message);
+  }
+
+  return goals.length;
+}
+
 async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
   const supabase = createAdminClient();
   const row = eventToMatchRow(event);
@@ -149,6 +183,7 @@ async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
 
   const wasFinished = existing?.status === "finished";
   const isFinished = updated.status === "finished";
+  const isLive = updated.status === "live";
   const scoresChanged =
     existing?.home_score !== updated.home_score ||
     existing?.away_score !== updated.away_score ||
@@ -161,12 +196,17 @@ async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
     existing?.went_to_extra_time !== updated.went_to_extra_time ||
     existing?.went_to_penalties !== updated.went_to_penalties;
 
-  if (isFinished && (!wasFinished || scoresChanged)) {
-    const scored = await scoreMatchPredictions(updated as Match);
-    return { updated: true, scored };
+  let goalsSynced = 0;
+  if (isLive || isFinished) {
+    goalsSynced = await syncMatchGoals(updated.id, event.id);
   }
 
-  return { updated: true, scored: 0 };
+  if (isFinished && (!wasFinished || scoresChanged)) {
+    const scored = await scoreMatchPredictions(updated as Match);
+    return { updated: true, scored, goalsSynced };
+  }
+
+  return { updated: true, scored: 0, goalsSynced };
 }
 
 export async function syncResultsFromLiveScore() {
@@ -193,6 +233,7 @@ export async function syncResultsFromLiveScore() {
 
   let updated = 0;
   let scoredPredictions = 0;
+  let goalsSynced = 0;
 
   for (const eventId of candidateIds) {
     const event = eventsById.get(eventId);
@@ -201,11 +242,13 @@ export async function syncResultsFromLiveScore() {
     const result = await applyEventUpdate(event);
     if (result.updated) updated += 1;
     scoredPredictions += result.scored;
+    goalsSynced += result.goalsSynced;
   }
 
   return {
     checked: candidateIds.size,
     updated,
     scoredPredictions,
+    goalsSynced,
   };
 }

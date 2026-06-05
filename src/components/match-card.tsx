@@ -9,12 +9,17 @@ import {
   isPredictionLocked,
   totalPredictionPoints,
 } from "@/lib/match-phase";
-import type { Match, Prediction } from "@/lib/types";
+import {
+  formatGoalLabel,
+  groupGoalsByTeam,
+} from "@/lib/match-goals";
+import type { Match, MatchGoal, Prediction } from "@/lib/types";
 
 interface MatchCardProps {
   match: Match;
   prediction?: Prediction | null;
   otherPicks?: OtherPick[];
+  goals?: MatchGoal[];
   predictionsDisabled?: boolean;
 }
 
@@ -37,10 +42,23 @@ function otherPickPoints(pick: OtherPick) {
   );
 }
 
+function GoalList({ goals }: { goals: MatchGoal[] }) {
+  if (goals.length === 0) return null;
+
+  return (
+    <ul className="space-y-0.5 text-xs text-slate-600">
+      {goals.map((goal) => (
+        <li key={goal.id}>{formatGoalLabel(goal)}</li>
+      ))}
+    </ul>
+  );
+}
+
 export function MatchCard({
   match,
   prediction,
   otherPicks = [],
+  goals = [],
   predictionsDisabled = false,
 }: MatchCardProps) {
   const locked = isPredictionLocked(match, predictionsDisabled);
@@ -60,6 +78,9 @@ export function MatchCard({
   const etScore = formatScoreLine(match.home_score_et, match.away_score_et);
   const penScore = formatScoreLine(match.home_score_pen, match.away_score_pen);
   const userPoints = prediction ? totalPredictionPoints(prediction) : 0;
+  const { home: homeGoals, away: awayGoals } = groupGoalsByTeam(goals);
+  const showGoals =
+    goals.length > 0 && (match.status === "live" || match.status === "finished");
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -69,7 +90,15 @@ export function MatchCard({
           {match.stage}
           {match.round_number ? ` · MD ${match.round_number}` : ""}
         </span>
-        <span className="rounded-full bg-slate-100 px-2 py-1 uppercase tracking-wide text-slate-600">
+        <span
+          className={
+            match.status === "live"
+              ? "rounded-full bg-red-100 px-2 py-1 font-semibold uppercase tracking-wide text-red-700"
+              : match.status === "finished"
+                ? "rounded-full bg-emerald-100 px-2 py-1 font-semibold uppercase tracking-wide text-emerald-800"
+                : "rounded-full bg-slate-100 px-2 py-1 uppercase tracking-wide text-slate-600"
+          }
+        >
           {match.status}
         </span>
       </div>
@@ -80,6 +109,7 @@ export function MatchCard({
           {match.status === "finished" && ftScore && (
             <p className="text-3xl font-bold text-emerald-600">{ftScore.split(" - ")[0]}</p>
           )}
+          {showGoals && <div className="mt-2"><GoalList goals={homeGoals} /></div>}
         </div>
 
         <div className="text-center text-sm text-slate-500">
@@ -103,6 +133,11 @@ export function MatchCard({
           <p className="text-lg font-semibold text-slate-900">{match.away_team}</p>
           {match.status === "finished" && ftScore && (
             <p className="text-3xl font-bold text-emerald-600">{ftScore.split(" - ")[1]}</p>
+          )}
+          {showGoals && (
+            <div className="mt-2 sm:text-right">
+              <GoalList goals={awayGoals} />
+            </div>
           )}
         </div>
       </div>

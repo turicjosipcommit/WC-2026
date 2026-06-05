@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "sync:schedule": "tsx scripts/sync-schedule.ts",
-    "sync:results": "tsx scripts/sync-results.ts"
+    "sync:results": "tsx scripts/sync-results.ts",
+    "sync:results:if-needed": "tsx scripts/sync-results-if-needed.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
