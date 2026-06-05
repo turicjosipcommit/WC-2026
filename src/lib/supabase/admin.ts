@@ -1,7 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+function normalizeSupabaseUrl(raw: string | undefined) {
+  return raw?.trim().replace(/\/+$/, "") ?? "";
+}
+
 function requireSupabaseAdminEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const url = normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
   if (!url || !key) {
@@ -10,9 +14,9 @@ function requireSupabaseAdminEnv() {
     );
   }
 
-  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url)) {
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) {
     throw new Error(
-      `Invalid NEXT_PUBLIC_SUPABASE_URL "${url}". Use the full Project URL from Supabase → Settings → API, e.g. https://algpcgabntzngujtloly.supabase.co`
+      "Invalid NEXT_PUBLIC_SUPABASE_URL. Use the full Project URL from Supabase → Settings → API, e.g. https://algpcgabntzngujtloly.supabase.co"
     );
   }
 

@@ -29,21 +29,25 @@ jobs:
 
       - name: Validate dev Supabase secrets
         run: |
-          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
-            echo "::error::Missing DEV_NEXT_PUBLIC_SUPABASE_URL secret. Add the full dev Project URL, e.g. https://algpcgabntzngujtloly.supabase.co"
-            exit 1
-          fi
-          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "::error::Missing DEV_SUPABASE_SERVICE_ROLE_KEY secret."
-            exit 1
-          fi
-          case "$NEXT_PUBLIC_SUPABASE_URL" in
-            https://*.supabase.co) ;;
-            *)
-              echo "::error::DEV_NEXT_PUBLIC_SUPABASE_URL must be the full https URL, not just the project ref. Got: $NEXT_PUBLIC_SUPABASE_URL"
-              exit 1
-              ;;
-          esac
+          node <<'EOF'
+          const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "");
+          const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+
+          if (!url) {
+            console.error("::error::Missing DEV_NEXT_PUBLIC_SUPABASE_URL secret.");
+            process.exit(1);
+          }
+          if (!key) {
+            console.error("::error::Missing DEV_SUPABASE_SERVICE_ROLE_KEY secret.");
+            process.exit(1);
+          }
+          if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) {
+            console.error(
+              "::error::DEV_NEXT_PUBLIC_SUPABASE_URL must be the Project URL from Supabase → Settings → API, e.g. https://algpcgabntzngujtloly.supabase.co (not the project ref alone, not the anon/service key)."
+            );
+            process.exit(1);
+          }
+          EOF
 
       - name: Sync friendlies when matches are live or due
         run: npm run sync:friendlies:results:if-needed
