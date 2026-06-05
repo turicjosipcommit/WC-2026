@@ -4,6 +4,17 @@ export function isKnockoutMatch(match: Pick<Match, "stage">) {
   return match.stage !== "Group stage";
 }
 
+export function isPredictionLocked(
+  match: Pick<Match, "kickoff_at" | "status">,
+  predictionsDisabled = false
+) {
+  return (
+    predictionsDisabled ||
+    new Date(match.kickoff_at) <= new Date() ||
+    !["scheduled", "postponed"].includes(match.status)
+  );
+}
+
 export function totalPredictionPoints(prediction: Pick<
   Prediction,
   "points_awarded" | "et_points_awarded" | "pen_points_awarded"

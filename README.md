@@ -2,12 +2,12 @@
 
 A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts match scores, earns points, and climbs one shared leaderboard.
 
-**Stack:** Next.js · Supabase (Postgres + Auth) · SofaScore scrape via Playwright
+**Stack:** Next.js · Supabase (Postgres + Auth) · LiveScore API
 
 ## Features
 
 - Google login for ~15 friends (single group, no leagues)
-- Fixture list synced from SofaScore
+- Fixture list synced from LiveScore
 - Predictions lock at kickoff
 - Auto scoring when results sync
 - Leaderboard with exact-score count
@@ -29,6 +29,9 @@ A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts
 
    - `supabase/migrations/001_initial.sql`
    - `supabase/migrations/002_google_profile_names.sql`
+   - `supabase/migrations/003_ensure_profiles.sql`
+   - `supabase/migrations/004_extra_time_penalties.sql`
+   - `supabase/migrations/005_livescore_event_id.sql` (no-op on fresh installs)
 
 3. In **Authentication → URL configuration**, add:
    - Site URL: `http://localhost:3000` (and your production URL later)
@@ -58,11 +61,17 @@ Fill in:
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 - `CRON_SECRET` (random string)
 
+Optional LiveScore overrides (defaults target WC 2026):
+
+- `LIVESCORE_COMPETITION_ID` (default `734`)
+- `LIVESCORE_PROJECT_ID` (default `2`)
+- `LIVESCORE_LOCALE` (default `en`)
+- `LIVESCORE_ESD_UTC_OFFSET_HOURS` (default `2`)
+
 ### 3. Install & run
 
 ```bash
 npm install
-npx playwright install chromium
 npm run dev
 ```
 
@@ -80,7 +89,7 @@ npm run sync:results
 
 ## Cron / automation
 
-### Option A — GitHub Actions (recommended for SofaScore + Playwright)
+### Option A — GitHub Actions (recommended)
 
 Add repo secrets:
 
@@ -115,7 +124,7 @@ src/
   app/                 # Pages + API routes
   components/          # UI
   lib/
-    sofascore/         # Playwright client + sync
+    livescore/         # LiveScore client + sync
     supabase/          # Clients
     scoring.ts         # Points calculation
 scripts/
@@ -124,14 +133,13 @@ scripts/
 supabase/migrations/   # DB schema
 ```
 
-## SofaScore endpoints used
+## LiveScore API
 
-- Tournament `16`, season `58210`
-- `/unique-tournament/16/season/58210/rounds`
-- `/unique-tournament/16/season/58210/events/round/{n}`
-- `/event/{eventId}`
+- Base: `https://prod-cdn-public-api.livescore.com/v1/api/app`
+- Competition details: `/competition/{id}/details/{projectId}?locale=en`
+- Defaults: competition `734`, project `2` (WC 2026)
 
-SofaScore has **no official public API**. This app uses browser-authenticated requests for a private friend league. Use at your own risk.
+LiveScore has **no official public API documentation**. This app uses their public competition endpoint for a private friend league. Use at your own risk.
 
 ## Invite friends
 

@@ -10,7 +10,7 @@ create table public.profiles (
 
 create table public.matches (
   id uuid primary key default gen_random_uuid(),
-  sofascore_event_id bigint not null unique,
+  livescore_event_id bigint not null unique,
   home_team text not null,
   away_team text not null,
   group_name text,

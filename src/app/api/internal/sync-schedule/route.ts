@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { syncScheduleFromSofaScore } from "@/lib/sofascore/sync";
+import { syncScheduleFromLiveScore } from "@/lib/livescore/sync";
 
 function authorize(request: Request) {
   const secret = request.headers.get("x-cron-secret");
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await syncScheduleFromSofaScore();
+    const result = await syncScheduleFromLiveScore();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Sync failed";

@@ -56,7 +56,11 @@ export default async function MyPicksPage() {
           </div>
         ) : (
           <Suspense fallback={<div className="text-sm text-slate-500">Loading picks…</div>}>
-            <MyPicksTabs groups={roundGroups} defaultRoundKey={defaultRoundKey} />
+            <MyPicksTabs
+              groups={roundGroups}
+              defaultRoundKey={defaultRoundKey}
+              predictionsDisabled={isAuthDisabled()}
+            />
           </Suspense>
         )}
       </main>

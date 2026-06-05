@@ -13,7 +13,7 @@ export interface Profile {
 
 export interface Match {
   id: string;
-  sofascore_event_id: number;
+  livescore_event_id: number;
   home_team: string;
   away_team: string;
   group_name: string | null;

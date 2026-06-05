@@ -2,10 +2,13 @@
 import { config } from "dotenv";
 
 config({ path: ".env.local" });
+if (!process.env.CI && process.env.WC_SYNC_ENV !== "production") {
+  config({ path: ".env.development.local", override: true });
+}
 
 async function main() {
-  const { syncScheduleFromSofaScore } = await import("../src/lib/sofascore/sync");
-  const result = await syncScheduleFromSofaScore();
+  const { syncScheduleFromLiveScore } = await import("../src/lib/livescore/sync");
+  const result = await syncScheduleFromLiveScore();
   console.log(JSON.stringify({ ok: true, ...result }, null, 2));
 }
 

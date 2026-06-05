@@ -3,38 +3,30 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Match } from "@/lib/types";
 import {
   fetchAllScheduleEvents,
-  fetchEvent,
-  fetchRecentEvents,
-  fetchUpcomingEvents,
-  closeSofaSession,
 } from "./client";
-import {
-  extractGroupName,
-  extractStage,
-  mapSofaScoreStatus,
-} from "./mappers";
-import type { SofaScoreEvent } from "./types";
+import { mapLiveScoreStatus } from "./mappers";
+import type { LiveScoreNormalizedEvent } from "./types";
 
-function extractMatchScores(event: SofaScoreEvent) {
-  const homeCurrent = event.homeScore?.current ?? null;
-  const awayCurrent = event.awayScore?.current ?? null;
-  const home90 = event.homeScore?.normaltime ?? homeCurrent;
-  const away90 = event.awayScore?.normaltime ?? awayCurrent;
-  const homePen = event.homeScore?.penalties ?? null;
-  const awayPen = event.awayScore?.penalties ?? null;
+function extractMatchScores(event: LiveScoreNormalizedEvent) {
+  const homeCurrent = event.homeScore ?? null;
+  const awayCurrent = event.awayScore ?? null;
+  const home90 = event.homeScore90 ?? homeCurrent;
+  const away90 = event.awayScore90 ?? awayCurrent;
+  const homePen = event.homeScorePen ?? null;
+  const awayPen = event.awayScorePen ?? null;
   const wentToPenalties = homePen != null && awayPen != null;
   const wentToExtraTime =
     wentToPenalties ||
-    (event.homeScore?.overtime != null && event.homeScore.overtime > 0) ||
-    (event.status.description?.toLowerCase().includes("aet") ?? false);
+    (event.homeScoreEt != null && event.awayScoreEt != null) ||
+    event.statusCode.toUpperCase() === "AET";
 
   return {
     home_score: homeCurrent,
     away_score: awayCurrent,
     home_score_90: home90,
     away_score_90: away90,
-    home_score_et: wentToExtraTime ? homeCurrent : null,
-    away_score_et: wentToExtraTime ? awayCurrent : null,
+    home_score_et: wentToExtraTime ? (event.homeScoreEt ?? homeCurrent) : null,
+    away_score_et: wentToExtraTime ? (event.awayScoreEt ?? awayCurrent) : null,
     home_score_pen: homePen,
     away_score_pen: awayPen,
     went_to_extra_time: wentToExtraTime,
@@ -42,8 +34,8 @@ function extractMatchScores(event: SofaScoreEvent) {
   };
 }
 
-function eventToMatchRow(event: SofaScoreEvent) {
-  const status = mapSofaScoreStatus(event.status.type);
+function eventToMatchRow(event: LiveScoreNormalizedEvent) {
+  const status = mapLiveScoreStatus(event.statusCode);
   const scores =
     status === "finished"
       ? extractMatchScores(event)
@@ -61,12 +53,12 @@ function eventToMatchRow(event: SofaScoreEvent) {
         };
 
   return {
-    sofascore_event_id: event.id,
-    home_team: event.homeTeam.name,
-    away_team: event.awayTeam.name,
-    group_name: extractGroupName(event),
-    stage: extractStage(event),
-    round_number: event.roundInfo?.round ?? null,
+    livescore_event_id: event.id,
+    home_team: event.homeTeam,
+    away_team: event.awayTeam,
+    group_name: event.groupName,
+    stage: event.stage,
+    round_number: event.roundNumber,
     kickoff_at: new Date(event.startTimestamp * 1000).toISOString(),
     status,
     ...scores,
@@ -77,7 +69,7 @@ function eventToMatchRow(event: SofaScoreEvent) {
   };
 }
 
-export async function syncScheduleFromSofaScore() {
+export async function syncScheduleFromLiveScore() {
   const supabase = createAdminClient();
   const events = await fetchAllScheduleEvents();
 
@@ -85,7 +77,7 @@ export async function syncScheduleFromSofaScore() {
   for (const event of events) {
     const row = eventToMatchRow(event);
     const { error } = await supabase.from("matches").upsert(row, {
-      onConflict: "sofascore_event_id",
+      onConflict: "livescore_event_id",
       ignoreDuplicates: false,
     });
 
@@ -131,14 +123,14 @@ async function scoreMatchPredictions(match: Match) {
   return scored;
 }
 
-async function applyEventUpdate(event: SofaScoreEvent) {
+async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
   const supabase = createAdminClient();
   const row = eventToMatchRow(event);
 
   const { data: existing, error: fetchError } = await supabase
     .from("matches")
     .select("*")
-    .eq("sofascore_event_id", event.id)
+    .eq("livescore_event_id", event.id)
     .maybeSingle();
 
   if (fetchError) {
@@ -147,7 +139,7 @@ async function applyEventUpdate(event: SofaScoreEvent) {
 
   const { data: updated, error: upsertError } = await supabase
     .from("matches")
-    .upsert(row, { onConflict: "sofascore_event_id" })
+    .upsert(row, { onConflict: "livescore_event_id" })
     .select("*")
     .single();
 
@@ -177,40 +169,43 @@ async function applyEventUpdate(event: SofaScoreEvent) {
   return { updated: true, scored: 0 };
 }
 
-export async function syncResultsFromSofaScore() {
+export async function syncResultsFromLiveScore() {
   const supabase = createAdminClient();
 
-  try {
-    const liveCandidates = await supabase
-      .from("matches")
-      .select("sofascore_event_id")
-      .in("status", ["scheduled", "live"])
-      .lte("kickoff_at", new Date().toISOString());
+  const liveCandidates = await supabase
+    .from("matches")
+    .select("livescore_event_id")
+    .in("status", ["scheduled", "live"])
+    .lte("kickoff_at", new Date().toISOString());
 
-    const recent = await fetchRecentEvents();
-    const upcoming = await fetchUpcomingEvents();
-    const candidateIds = new Set<number>([
-      ...recent.map((e) => e.id),
-      ...upcoming.filter((e) => e.status.type === "inprogress").map((e) => e.id),
-      ...(liveCandidates.data ?? []).map((m) => m.sofascore_event_id),
-    ]);
+  const allEvents = await fetchAllScheduleEvents();
+  const eventsById = new Map(allEvents.map((event) => [event.id, event]));
 
-    let updated = 0;
-    let scoredPredictions = 0;
+  const candidateIds = new Set<number>([
+    ...allEvents
+      .filter((event) => {
+        const code = event.statusCode.toUpperCase();
+        return code === "FT" || ["1H", "2H", "HT", "ET", "PT", "LIVE"].includes(code);
+      })
+      .map((event) => event.id),
+    ...(liveCandidates.data ?? []).map((match) => match.livescore_event_id),
+  ]);
 
-    for (const eventId of candidateIds) {
-      const event = await fetchEvent(eventId);
-      const result = await applyEventUpdate(event);
-      if (result.updated) updated += 1;
-      scoredPredictions += result.scored;
-    }
+  let updated = 0;
+  let scoredPredictions = 0;
 
-    return {
-      checked: candidateIds.size,
-      updated,
-      scoredPredictions,
-    };
-  } finally {
-    await closeSofaSession();
+  for (const eventId of candidateIds) {
+    const event = eventsById.get(eventId);
+    if (!event) continue;
+
+    const result = await applyEventUpdate(event);
+    if (result.updated) updated += 1;
+    scoredPredictions += result.scored;
   }
+
+  return {
+    checked: candidateIds.size,
+    updated,
+    scoredPredictions,
+  };
 }
