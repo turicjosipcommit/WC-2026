@@ -27,6 +27,24 @@ jobs:
 
       - run: npm ci
 
+      - name: Validate dev Supabase secrets
+        run: |
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+            echo "::error::Missing DEV_NEXT_PUBLIC_SUPABASE_URL secret. Add the full dev Project URL, e.g. https://algpcgabntzngujtloly.supabase.co"
+            exit 1
+          fi
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Missing DEV_SUPABASE_SERVICE_ROLE_KEY secret."
+            exit 1
+          fi
+          case "$NEXT_PUBLIC_SUPABASE_URL" in
+            https://*.supabase.co) ;;
+            *)
+              echo "::error::DEV_NEXT_PUBLIC_SUPABASE_URL must be the full https URL, not just the project ref. Got: $NEXT_PUBLIC_SUPABASE_URL"
+              exit 1
+              ;;
+          esac
+
       - name: Sync friendlies when matches are live or due
         run: npm run sync:friendlies:results:if-needed
 

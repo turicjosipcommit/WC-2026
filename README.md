@@ -113,10 +113,10 @@ Add repo secrets:
 
 Between games the job exits immediately with no LiveScore calls.
 
-**Dev friendlies** — `.github/workflows/sync-friendlies-results.yml` uses the same gating but targets the **dev** Supabase project with International Friendlies (`537` / `details-w`). Add repo secrets:
+**Dev friendlies** — `.github/workflows/sync-friendlies-results.yml` uses the same gating but targets the **dev** Supabase project with International Friendlies (`537` / `details-w`). Add repo secrets with these **exact names**:
 
-- `DEV_NEXT_PUBLIC_SUPABASE_URL`
-- `DEV_SUPABASE_SERVICE_ROLE_KEY`
+- `DEV_NEXT_PUBLIC_SUPABASE_URL` — full URL, e.g. `https://algpcgabntzngujtloly.supabase.co` (not just the project ref)
+- `DEV_SUPABASE_SERVICE_ROLE_KEY` — dev service role key from Supabase → Settings → API
 - `DEV_CRON_SECRET` (optional, if you ping a dev deployment)
 
 Optional repo variable: `DEV_APP_URL` (dev deployment URL for the internal sync ping).
