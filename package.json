@@ -9,7 +9,10 @@
     "lint": "eslint",
     "sync:schedule": "tsx scripts/sync-schedule.ts",
     "sync:results": "tsx scripts/sync-results.ts",
-    "sync:results:if-needed": "tsx scripts/sync-results-if-needed.ts"
+    "sync:results:if-needed": "tsx scripts/sync-results-if-needed.ts",
+    "sync:friendlies:schedule": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-schedule.ts",
+    "sync:friendlies:results": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results.ts",
+    "sync:friendlies:results:if-needed": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results-if-needed.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

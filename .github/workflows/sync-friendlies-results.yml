@@ -1,0 +1,40 @@
+name: Sync friendlies results
+
+on:
+  schedule:
+    # Every 5 minutes — gated to active match windows (+ fallback at :00/:30 UTC)
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEV_NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEV_SUPABASE_SERVICE_ROLE_KEY }}
+      LIVESCORE_COMPETITION_ID: "537"
+      LIVESCORE_DETAILS_VARIANT: details-w
+      SYNC_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Sync friendlies when matches are live or due
+        run: npm run sync:friendlies:results:if-needed
+
+      - name: Ping dev app sync endpoint (optional)
+        if: vars.DEV_APP_URL != ''
+        env:
+          APP_URL: ${{ vars.DEV_APP_URL }}
+          CRON_SECRET: ${{ secrets.DEV_CRON_SECRET }}
+        run: |
+          curl -fsS -X POST "$APP_URL/api/internal/sync-results" \
+            -H "x-cron-secret: $CRON_SECRET" || true

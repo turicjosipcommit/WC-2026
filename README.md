@@ -65,8 +65,16 @@ Optional LiveScore overrides (defaults target WC 2026):
 
 - `LIVESCORE_COMPETITION_ID` (default `734`)
 - `LIVESCORE_PROJECT_ID` (default `2`)
+- `LIVESCORE_DETAILS_VARIANT` (default `details`; use `details-w` for International Friendlies)
 - `LIVESCORE_LOCALE` (default `en`)
 - `LIVESCORE_ESD_UTC_OFFSET_HOURS` (default `2`)
+
+For local dev testing with friendlies, put overrides in `.env.development.local`:
+
+```bash
+LIVESCORE_COMPETITION_ID=537
+LIVESCORE_DETAILS_VARIANT=details-w
+```
 
 ### 3. Install & run
 
@@ -97,7 +105,7 @@ Add repo secrets:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `CRON_SECRET` (optional, for deployed app ping)
 
-The workflow `.github/workflows/sync-results.yml` runs every **5 minutes** (UTC) and only syncs when needed:
+**Production (WC 2026)** — `.github/workflows/sync-results.yml` runs every **5 minutes** (UTC) against the production Supabase project and only syncs when needed:
 
 1. **Active window** — any match is `live`, or within 5 minutes before kickoff through 3 hours after (covers ET/pens)
 2. **Fallback** — full sync at **:00** and **:30** each hour (includes a best-effort schedule refresh)
@@ -105,7 +113,21 @@ The workflow `.github/workflows/sync-results.yml` runs every **5 minutes** (UTC)
 
 Between games the job exits immediately with no LiveScore calls.
 
-`npm run sync:results` still forces a full sync anytime locally.
+**Dev friendlies** — `.github/workflows/sync-friendlies-results.yml` uses the same gating but targets the **dev** Supabase project with International Friendlies (`537` / `details-w`). Add repo secrets:
+
+- `DEV_NEXT_PUBLIC_SUPABASE_URL`
+- `DEV_SUPABASE_SERVICE_ROLE_KEY`
+- `DEV_CRON_SECRET` (optional, if you ping a dev deployment)
+
+Optional repo variable: `DEV_APP_URL` (dev deployment URL for the internal sync ping).
+
+Load the friendlies schedule once on dev:
+
+```bash
+npm run sync:friendlies:schedule
+```
+
+`npm run sync:results` still forces a full WC sync anytime locally; use `npm run sync:friendlies:results` for friendlies.
 
 ### Option B — Manual / local cron
 
