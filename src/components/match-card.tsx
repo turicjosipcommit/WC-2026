@@ -109,45 +109,59 @@ export function MatchCard({
         </span>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-        <div>
-          <p className="text-lg font-semibold text-slate-900">{match.home_team}</p>
-          {showScore && (
-            <p className={`text-3xl font-bold ${scoreClassName}`}>{homeScoreDisplay}</p>
-          )}
-          {showGoals && <div className="mt-2"><GoalList goals={homeGoals} /></div>}
+      <div className="space-y-2">
+        <p className="text-center text-xs text-slate-500 sm:hidden">{kickoff}</p>
+
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3">
+          <p className="min-w-0 truncate text-base font-semibold leading-tight text-slate-900 sm:text-lg">
+            {match.home_team}
+          </p>
+          <div className="shrink-0 px-1 text-center text-xs text-slate-500 sm:text-sm">
+            <p className="hidden whitespace-nowrap sm:block">{kickoff}</p>
+            {!showScore && (
+              <p className="font-medium text-slate-400 sm:mt-1">vs</p>
+            )}
+          </div>
+          <p className="min-w-0 truncate text-right text-base font-semibold leading-tight text-slate-900 sm:text-lg">
+            {match.away_team}
+          </p>
         </div>
 
-        <div className="text-center text-sm text-slate-500">
-          <p>{kickoff}</p>
-          {match.status === "finished" ? (
-            <div className="mt-1 space-y-0.5">
-              <p className="text-xl font-bold text-slate-700">FT</p>
-              {match.went_to_extra_time && etScore && (
-                <p className="text-xs text-slate-500">AET {etScore}</p>
-              )}
-              {match.went_to_penalties && penScore && (
-                <p className="text-xs text-slate-500">Pens {penScore}</p>
+        {showScore && (
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3">
+            <p className={`text-2xl font-bold sm:text-3xl ${scoreClassName}`}>
+              {homeScoreDisplay}
+            </p>
+            <div className="shrink-0 px-1 text-center text-xs text-slate-500 sm:text-sm">
+              {match.status === "finished" ? (
+                <div className="space-y-0.5">
+                  <p className="text-base font-bold text-slate-700 sm:text-xl">FT</p>
+                  {match.went_to_extra_time && etScore && (
+                    <p className="text-[10px] sm:text-xs">AET {etScore}</p>
+                  )}
+                  {match.went_to_penalties && penScore && (
+                    <p className="text-[10px] sm:text-xs">Pens {penScore}</p>
+                  )}
+                </div>
+              ) : (
+                <p className={`text-base font-bold sm:text-xl ${scoreClassName}`}>{ftScore}</p>
               )}
             </div>
-          ) : match.status === "live" && ftScore ? (
-            <p className={`mt-1 text-xl font-bold ${scoreClassName}`}>{ftScore}</p>
-          ) : (
-            <p className="mt-1">vs</p>
-          )}
-        </div>
+            <p className={`text-right text-2xl font-bold sm:text-3xl ${scoreClassName}`}>
+              {awayScoreDisplay}
+            </p>
+          </div>
+        )}
 
-        <div className="sm:text-right">
-          <p className="text-lg font-semibold text-slate-900">{match.away_team}</p>
-          {showScore && (
-            <p className={`text-3xl font-bold ${scoreClassName}`}>{awayScoreDisplay}</p>
-          )}
-          {showGoals && (
-            <div className="mt-2 sm:text-right">
+        {showGoals && (
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-2 sm:gap-x-3">
+            <GoalList goals={homeGoals} />
+            <div />
+            <div className="text-right">
               <GoalList goals={awayGoals} />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 border-t border-slate-100 pt-4">
