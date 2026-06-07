@@ -22,8 +22,8 @@ function ScoreInputGroup({
   optional?: boolean;
 }) {
   return (
-    <div className="min-w-[5.5rem] shrink-0">
-      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div className="min-w-[4.75rem] shrink-0 sm:min-w-[5.5rem]">
+      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-slate-500">
         <span className="sm:hidden">{shortLabel ?? label}</span>
         <span className="hidden sm:inline">{label}</span>
         {optional ? (
@@ -33,7 +33,7 @@ function ScoreInputGroup({
           </span>
         ) : null}
       </p>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 sm:gap-2">
         <input
           type="number"
           min={0}
@@ -42,7 +42,7 @@ function ScoreInputGroup({
           onChange={(e) => onHomeChange(e.target.value)}
           aria-label={`${label} home`}
           placeholder="H"
-          className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
+          className="w-12 rounded-lg border border-slate-300 bg-white px-1.5 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
         />
         <input
           type="number"
@@ -52,7 +52,7 @@ function ScoreInputGroup({
           onChange={(e) => onAwayChange(e.target.value)}
           aria-label={`${label} away`}
           placeholder="A"
-          className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
+          className="w-12 rounded-lg border border-slate-300 bg-white px-1.5 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
         />
       </div>
     </div>
@@ -137,7 +137,7 @@ export function PredictionEditor({
         <div
           className={
             knockout
-              ? "grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-3"
+              ? "flex flex-wrap items-end gap-x-5 gap-y-3 sm:gap-x-4"
               : "contents"
           }
         >
