@@ -1,8 +1,18 @@
 export const SCORING = {
-  exact: 5,
-  resultAndDiff: 3,
-  resultOnly: 1,
+  exact: 4,
+  resultAndOneTeam: 3,
+  resultOnly: 2,
+  oneTeamOnly: 1,
+  none: 0,
 } as const;
+
+type MatchOutcome = "home" | "away" | "draw";
+
+function matchOutcome(home: number, away: number): MatchOutcome {
+  if (home > away) return "home";
+  if (away > home) return "away";
+  return "draw";
+}
 
 export function calculatePoints(
   predHome: number,
@@ -14,21 +24,25 @@ export function calculatePoints(
     return SCORING.exact;
   }
 
-  const predDiff = predHome - predAway;
-  const actualDiff = actualHome - actualAway;
+  const correctOutcome =
+    matchOutcome(predHome, predAway) === matchOutcome(actualHome, actualAway);
+  const homeExact = predHome === actualHome;
+  const awayExact = predAway === actualAway;
+  const oneTeamExact = homeExact || awayExact;
 
-  const predResult = Math.sign(predDiff);
-  const actualResult = Math.sign(actualDiff);
-
-  if (predResult !== actualResult) {
-    return 0;
+  if (correctOutcome && oneTeamExact) {
+    return SCORING.resultAndOneTeam;
   }
 
-  if (predDiff === actualDiff) {
-    return SCORING.resultAndDiff;
+  if (correctOutcome) {
+    return SCORING.resultOnly;
   }
 
-  return SCORING.resultOnly;
+  if (oneTeamExact) {
+    return SCORING.oneTeamOnly;
+  }
+
+  return SCORING.none;
 }
 
 type ScorePhase = {

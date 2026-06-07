@@ -72,8 +72,9 @@ export interface Prediction {
 
 export interface PointsBreakdown {
   exact: number;
-  resultAndDiff: number;
+  resultAndOneTeam: number;
   resultOnly: number;
+  oneTeamOnly: number;
   none: number;
   pending: number;
 }

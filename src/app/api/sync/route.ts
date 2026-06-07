@@ -3,6 +3,7 @@ import {
   syncResultsFromLiveScore,
   syncScheduleFromLiveScore,
 } from "@/lib/livescore/sync";
+import { getLastSyncedAt } from "@/lib/sync-metadata";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -32,11 +33,13 @@ export async function POST() {
   try {
     const schedule = await syncScheduleFromLiveScore();
     const results = await syncResultsFromLiveScore();
+    const lastSyncedAt = await getLastSyncedAt();
 
     return NextResponse.json({
       ok: true,
       schedule,
       results,
+      lastSyncedAt: lastSyncedAt?.toISOString() ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Sync failed";

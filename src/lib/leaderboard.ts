@@ -16,8 +16,9 @@ type PredictionRow = {
 export function emptyPointsBreakdown(): PointsBreakdown {
   return {
     exact: 0,
-    resultAndDiff: 0,
+    resultAndOneTeam: 0,
     resultOnly: 0,
+    oneTeamOnly: 0,
     none: 0,
     pending: 0,
   };
@@ -33,13 +34,18 @@ function applyPointsBreakdown(breakdown: PointsBreakdown, pointsAwarded: number 
     return;
   }
 
-  if (pointsAwarded === SCORING.resultAndDiff) {
-    breakdown.resultAndDiff += 1;
+  if (pointsAwarded === SCORING.resultAndOneTeam) {
+    breakdown.resultAndOneTeam += 1;
     return;
   }
 
   if (pointsAwarded === SCORING.resultOnly) {
     breakdown.resultOnly += 1;
+    return;
+  }
+
+  if (pointsAwarded === SCORING.oneTeamOnly) {
+    breakdown.oneTeamOnly += 1;
     return;
   }
 
@@ -101,8 +107,13 @@ export function buildLeaderboardRows(
 
 export const POINTS_BREAKDOWN_LABELS = [
   { key: "exact" as const, label: "Exact score", points: SCORING.exact },
-  { key: "resultAndDiff" as const, label: "Result + goal diff", points: SCORING.resultAndDiff },
+  {
+    key: "resultAndOneTeam" as const,
+    label: "Result + one team score",
+    points: SCORING.resultAndOneTeam,
+  },
   { key: "resultOnly" as const, label: "Result only", points: SCORING.resultOnly },
-  { key: "none" as const, label: "No points", points: 0 },
+  { key: "oneTeamOnly" as const, label: "One team score", points: SCORING.oneTeamOnly },
+  { key: "none" as const, label: "No points", points: SCORING.none },
   { key: "pending" as const, label: "Pending", points: null },
 ];

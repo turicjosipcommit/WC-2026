@@ -19,6 +19,23 @@ export function liveScoreEventIdToDbId(eventId: string): number {
   return parsed;
 }
 
+/** LiveScore often sends the clock as `65'`, `45+2'`, etc. while the match is in play. */
+export function isLiveScoreClockStatus(eps: string) {
+  return /^\d{1,3}(\+\d{1,2})?'?$/i.test(eps.trim());
+}
+
+export function isLiveScoreInPlayStatus(eps: string, esid?: number) {
+  const code = eps.toUpperCase();
+  if (["1H", "2H", "HT", "ET", "PT", "LIVE"].includes(code)) {
+    return true;
+  }
+  if (isLiveScoreClockStatus(code)) {
+    return true;
+  }
+  // Esid 2/3 = in play in LiveScore feeds (minute markers use 3).
+  return esid === 2 || esid === 3;
+}
+
 export function mapLiveScoreStatus(eps: string, esid?: number): MatchStatus {
   const code = eps.toUpperCase();
 
@@ -26,9 +43,8 @@ export function mapLiveScoreStatus(eps: string, esid?: number): MatchStatus {
   if (code === "FT" || code === "AET" || code === "AP") return "finished";
   if (code === "POST" || code === "PST") return "postponed";
   if (code === "CANC" || code === "ABD" || code === "AWD") return "cancelled";
-  if (["1H", "2H", "HT", "ET", "PT", "LIVE"].includes(code)) return "live";
-  if (esid === 2) return "live";
-  if (esid === 6) return "finished";
+  if (isLiveScoreInPlayStatus(code, esid)) return "live";
+  if (esid === 6 || esid === 13) return "finished";
 
   return "scheduled";
 }
@@ -72,6 +88,7 @@ export function normalizeEvent(
     roundNumber: event.ErnInf ? Number.parseInt(event.ErnInf, 10) || null : null,
     startTimestamp: 0,
     statusCode: event.Eps,
+    statusId: event.Esid,
     homeScore,
     awayScore,
     homeScore90,

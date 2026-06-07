@@ -1,5 +1,5 @@
 import { LIVESCORE } from "./constants";
-import { normalizeEvent } from "./mappers";
+import { isLiveScoreInPlayStatus, normalizeEvent } from "./mappers";
 import type {
   LiveScoreCompetitionDetails,
   LiveScoreIncidentsResponse,
@@ -80,10 +80,9 @@ export async function fetchRecentEvents(): Promise<LiveScoreNormalizedEvent[]> {
 
 export async function fetchLiveEvents(): Promise<LiveScoreNormalizedEvent[]> {
   const events = await fetchAllScheduleEvents();
-  return events.filter((event) => {
-    const code = event.statusCode.toUpperCase();
-    return ["1H", "2H", "HT", "ET", "PT", "LIVE"].includes(code);
-  });
+  return events.filter((event) =>
+    isLiveScoreInPlayStatus(event.statusCode, event.statusId)
+  );
 }
 
 export async function fetchUpcomingEvents(): Promise<LiveScoreNormalizedEvent[]> {

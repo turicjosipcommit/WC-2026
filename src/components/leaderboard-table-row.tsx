@@ -4,7 +4,12 @@ import { Fragment, useState } from "react";
 import { POINTS_BREAKDOWN_LABELS } from "@/lib/leaderboard";
 import type { LeaderboardRow } from "@/lib/types";
 
-const MAIN_BREAKDOWN_KEYS = new Set(["exact", "resultAndDiff", "resultOnly"]);
+const MAIN_BREAKDOWN_KEYS = new Set([
+  "exact",
+  "resultAndOneTeam",
+  "resultOnly",
+  "oneTeamOnly",
+]);
 
 function ChevronIcon({ open }: { open: boolean }) {
   return (

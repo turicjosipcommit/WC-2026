@@ -44,6 +44,7 @@ export interface LiveScoreNormalizedEvent {
   roundNumber: number | null;
   startTimestamp: number;
   statusCode: string;
+  statusId?: number;
   homeScore: number | null;
   awayScore: number | null;
   homeScore90: number | null;

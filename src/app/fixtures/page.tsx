@@ -7,6 +7,8 @@ import {
   groupFixturesByRound,
   groupOtherPicksByMatch,
 } from "@/lib/fixtures-grouping";
+import { canRevealOtherPicks } from "@/lib/match-phase";
+import { getLastSyncedAt } from "@/lib/sync-metadata";
 import { createClient } from "@/lib/supabase/server";
 import { getDataClient } from "@/lib/supabase/data";
 import type { Match, MatchGoal, Prediction } from "@/lib/types";
@@ -56,13 +58,15 @@ async function getFixtures() {
   return ((matches ?? []) as Match[]).map((match) => ({
     match,
     prediction: predictionByMatch.get(match.id) ?? null,
-    otherPicks: otherPicksByMatch.get(match.id) ?? [],
+    otherPicks: canRevealOtherPicks(match)
+      ? (otherPicksByMatch.get(match.id) ?? [])
+      : [],
     goals: goalsByMatch.get(match.id) ?? [],
   }));
 }
 
 export default async function FixturesPage() {
-  const fixtures = await getFixtures();
+  const [fixtures, lastSyncedAt] = await Promise.all([getFixtures(), getLastSyncedAt()]);
   const predictionsDisabled = isAuthDisabled();
   const roundGroups = groupFixturesByRound(fixtures);
 
@@ -73,7 +77,10 @@ export default async function FixturesPage() {
         <div>
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-3xl font-bold text-slate-900">Fixtures</h1>
-            <SyncDataButton className="shrink-0" />
+            <SyncDataButton
+              className="shrink-0"
+              lastSyncedAt={lastSyncedAt?.toISOString() ?? null}
+            />
           </div>
           <p className="mt-1 text-slate-600">
             Enter your score predictions before kickoff.

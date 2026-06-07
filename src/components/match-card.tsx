@@ -7,6 +7,7 @@ import {
   formatScoreLine,
   hasScoredPrediction,
   isPredictionLocked,
+  canRevealOtherPicks,
   totalPredictionPoints,
 } from "@/lib/match-phase";
 import {
@@ -77,6 +78,11 @@ export function MatchCard({
   );
   const etScore = formatScoreLine(match.home_score_et, match.away_score_et);
   const penScore = formatScoreLine(match.home_score_pen, match.away_score_pen);
+  const showScore =
+    (match.status === "live" || match.status === "finished") && ftScore != null;
+  const scoreClassName =
+    match.status === "live" ? "text-red-600" : "text-emerald-600";
+  const [homeScoreDisplay, awayScoreDisplay] = ftScore?.split(" - ") ?? [];
   const userPoints = prediction ? totalPredictionPoints(prediction) : 0;
   const { home: homeGoals, away: awayGoals } = groupGoalsByTeam(goals);
   const showGoals =
@@ -106,8 +112,8 @@ export function MatchCard({
       <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
         <div>
           <p className="text-lg font-semibold text-slate-900">{match.home_team}</p>
-          {match.status === "finished" && ftScore && (
-            <p className="text-3xl font-bold text-emerald-600">{ftScore.split(" - ")[0]}</p>
+          {showScore && (
+            <p className={`text-3xl font-bold ${scoreClassName}`}>{homeScoreDisplay}</p>
           )}
           {showGoals && <div className="mt-2"><GoalList goals={homeGoals} /></div>}
         </div>
@@ -124,6 +130,8 @@ export function MatchCard({
                 <p className="text-xs text-slate-500">Pens {penScore}</p>
               )}
             </div>
+          ) : match.status === "live" && ftScore ? (
+            <p className={`mt-1 text-xl font-bold ${scoreClassName}`}>{ftScore}</p>
           ) : (
             <p className="mt-1">vs</p>
           )}
@@ -131,8 +139,8 @@ export function MatchCard({
 
         <div className="sm:text-right">
           <p className="text-lg font-semibold text-slate-900">{match.away_team}</p>
-          {match.status === "finished" && ftScore && (
-            <p className="text-3xl font-bold text-emerald-600">{ftScore.split(" - ")[1]}</p>
+          {showScore && (
+            <p className={`text-3xl font-bold ${scoreClassName}`}>{awayScoreDisplay}</p>
           )}
           {showGoals && (
             <div className="mt-2 sm:text-right">
@@ -170,7 +178,7 @@ export function MatchCard({
         )}
       </div>
 
-      {otherPicks.length > 0 && (
+      {canRevealOtherPicks(match) && otherPicks.length > 0 && (
         <details className="mt-4 border-t border-slate-100 pt-3">
           <summary className="cursor-pointer select-none text-sm font-medium text-slate-600 hover:text-slate-900">
             Other picks ({otherPicks.length})

@@ -15,6 +15,17 @@ export function isPredictionLocked(
   );
 }
 
+/** Hide other players' picks until kickoff so they can't be copied beforehand. */
+export function canRevealOtherPicks(
+  match: Pick<Match, "kickoff_at" | "status">
+) {
+  if (match.status === "live" || match.status === "finished") {
+    return true;
+  }
+
+  return new Date(match.kickoff_at) <= new Date();
+}
+
 export function totalPredictionPoints(prediction: Pick<
   Prediction,
   "points_awarded" | "et_points_awarded" | "pen_points_awarded"

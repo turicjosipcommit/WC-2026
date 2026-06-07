@@ -1,17 +1,41 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type SyncDataButtonProps = {
   className?: string;
+  lastSyncedAt?: string | null;
 };
 
-export function SyncDataButton({ className = "" }: SyncDataButtonProps) {
+function formatLastSyncedAt(iso: string | null) {
+  if (!iso) {
+    return null;
+  }
+
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+export function SyncDataButton({ className = "", lastSyncedAt = null }: SyncDataButtonProps) {
   const router = useRouter();
   const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
+  const [syncedAt, setSyncedAt] = useState<string | null>(lastSyncedAt);
+
+  useEffect(() => {
+    setSyncedAt(lastSyncedAt);
+  }, [lastSyncedAt]);
+
+  const lastSyncedLabel = formatLastSyncedAt(syncedAt);
 
   async function syncData() {
     setSyncing(true);
@@ -23,12 +47,17 @@ export function SyncDataButton({ className = "" }: SyncDataButtonProps) {
       const data = (await response.json()) as {
         ok?: boolean;
         error?: string;
+        lastSyncedAt?: string | null;
         schedule?: { upserted?: number };
         results?: { updated?: number; scoredPredictions?: number };
       };
 
       if (!response.ok) {
         throw new Error(data.error ?? "Sync failed");
+      }
+
+      if (data.lastSyncedAt) {
+        setSyncedAt(data.lastSyncedAt);
       }
 
       const upserted = data.schedule?.upserted ?? 0;
@@ -59,6 +88,9 @@ export function SyncDataButton({ className = "" }: SyncDataButtonProps) {
       >
         {syncing ? "Syncing…" : "Sync data"}
       </button>
+      {lastSyncedLabel && (
+        <p className="text-right text-xs text-slate-500">Last synced {lastSyncedLabel}</p>
+      )}
       {message && (
         <p
           role="status"

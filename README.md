@@ -16,9 +16,11 @@ A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts
 
 | Outcome | Points |
 |---------|--------|
-| Exact score | 5 |
-| Correct result + goal difference | 3 |
-| Correct result (W/D/L) | 1 |
+| Exact score | 4 |
+| Correct result + one team's goal count | 3 |
+| Correct result (W/D/L) only | 2 |
+| One team's goal count (wrong result) | 1 |
+| Otherwise | 0 |
 
 ## Setup
 

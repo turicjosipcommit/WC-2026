@@ -6,7 +6,8 @@ import {
   fetchMatchIncidents,
 } from "./client";
 import { parseGoalsFromIncidents } from "./incidents";
-import { mapLiveScoreStatus } from "./mappers";
+import { mapLiveScoreStatus, isLiveScoreInPlayStatus } from "./mappers";
+import { recordLastSync } from "@/lib/sync-metadata";
 import type { LiveScoreNormalizedEvent } from "./types";
 
 function extractMatchScores(event: LiveScoreNormalizedEvent) {
@@ -37,9 +38,9 @@ function extractMatchScores(event: LiveScoreNormalizedEvent) {
 }
 
 function eventToMatchRow(event: LiveScoreNormalizedEvent) {
-  const status = mapLiveScoreStatus(event.statusCode);
+  const status = mapLiveScoreStatus(event.statusCode, event.statusId);
   const scores =
-    status === "finished"
+    status === "finished" || status === "live"
       ? extractMatchScores(event)
       : {
           home_score: null,
@@ -88,6 +89,8 @@ export async function syncScheduleFromLiveScore() {
     }
     upserted += 1;
   }
+
+  await recordLastSync();
 
   return { upserted, total: events.length };
 }
@@ -225,7 +228,12 @@ export async function syncResultsFromLiveScore() {
     ...allEvents
       .filter((event) => {
         const code = event.statusCode.toUpperCase();
-        return code === "FT" || ["1H", "2H", "HT", "ET", "PT", "LIVE"].includes(code);
+        return (
+          code === "FT" ||
+          code === "AET" ||
+          code === "AP" ||
+          isLiveScoreInPlayStatus(code, event.statusId)
+        );
       })
       .map((event) => event.id),
     ...(liveCandidates.data ?? []).map((match) => match.livescore_event_id),
@@ -244,6 +252,8 @@ export async function syncResultsFromLiveScore() {
     scoredPredictions += result.scored;
     goalsSynced += result.goalsSynced;
   }
+
+  await recordLastSync();
 
   return {
     checked: candidateIds.size,
