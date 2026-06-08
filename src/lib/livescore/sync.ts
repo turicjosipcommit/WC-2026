@@ -59,6 +59,8 @@ function eventToMatchRow(event: LiveScoreNormalizedEvent) {
     livescore_event_id: event.id,
     home_team: event.homeTeam,
     away_team: event.awayTeam,
+    home_team_img: event.homeTeamImg,
+    away_team_img: event.awayTeamImg,
     group_name: event.groupName,
     stage: event.stage,
     round_number: event.roundNumber,

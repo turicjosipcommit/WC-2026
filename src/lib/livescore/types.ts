@@ -2,6 +2,7 @@ export interface LiveScoreTeam {
   Nm: string;
   ID?: string;
   Abr?: string;
+  Img?: string;
 }
 
 export interface LiveScoreEvent {
@@ -39,6 +40,8 @@ export interface LiveScoreNormalizedEvent {
   id: number;
   homeTeam: string;
   awayTeam: string;
+  homeTeamImg: string | null;
+  awayTeamImg: string | null;
   groupName: string | null;
   stage: string;
   roundNumber: number | null;

@@ -2,6 +2,7 @@
 
 import type { OtherPick } from "@/lib/fixtures-grouping";
 import { PredictionEditor } from "@/components/prediction-editor";
+import { TeamLabel } from "@/components/team-label";
 import {
   formatPredictionSummary,
   formatScoreLine,
@@ -113,18 +114,23 @@ export function MatchCard({
         <p className="text-center text-xs text-slate-500 sm:hidden">{kickoff}</p>
 
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3">
-          <p className="min-w-0 truncate text-base font-semibold leading-tight text-slate-900 sm:text-lg">
-            {match.home_team}
-          </p>
+          <TeamLabel
+            name={match.home_team}
+            img={match.home_team_img}
+            className="min-w-0 text-base font-semibold leading-tight text-slate-900 sm:text-lg"
+          />
           <div className="shrink-0 px-1 text-center text-xs text-slate-500 sm:text-sm">
             <p className="hidden whitespace-nowrap sm:block">{kickoff}</p>
             {!showScore && (
               <p className="font-medium text-slate-400 sm:mt-1">vs</p>
             )}
           </div>
-          <p className="min-w-0 truncate text-right text-base font-semibold leading-tight text-slate-900 sm:text-lg">
-            {match.away_team}
-          </p>
+          <TeamLabel
+            name={match.away_team}
+            img={match.away_team_img}
+            align="right"
+            className="min-w-0 text-base font-semibold leading-tight text-slate-900 sm:text-lg"
+          />
         </div>
 
         {showScore && (

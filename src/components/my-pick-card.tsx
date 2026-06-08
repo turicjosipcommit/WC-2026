@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PredictionEditor } from "@/components/prediction-editor";
+import { TeamLabel } from "@/components/team-label";
 import {
   formatPredictionSummary,
   formatScoreLine,
@@ -40,8 +41,10 @@ export function MyPickCard({
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-medium text-slate-900">
-          {match.home_team} vs {match.away_team}
+        <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium text-slate-900">
+          <TeamLabel name={match.home_team} img={match.home_team_img} />
+          <span className="text-slate-400">vs</span>
+          <TeamLabel name={match.away_team} img={match.away_team_img} />
         </p>
         <p className="text-sm text-slate-500">
           {new Date(match.kickoff_at).toLocaleString()}

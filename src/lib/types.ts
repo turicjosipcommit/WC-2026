@@ -16,6 +16,8 @@ export interface Match {
   livescore_event_id: number;
   home_team: string;
   away_team: string;
+  home_team_img: string | null;
+  away_team_img: string | null;
   group_name: string | null;
   stage: string;
   round_number: number | null;

@@ -5,6 +5,11 @@ function teamName(event: LiveScoreEvent, side: "T1" | "T2") {
   return event[side]?.[0]?.Nm?.trim() ?? "TBD";
 }
 
+function teamImage(event: LiveScoreEvent, side: "T1" | "T2") {
+  const img = event[side]?.[0]?.Img?.trim();
+  return img || null;
+}
+
 function parseOptionalInt(value: string | undefined) {
   if (value == null || value.trim() === "") return null;
   const parsed = Number.parseInt(value, 10);
@@ -83,6 +88,8 @@ export function normalizeEvent(
     id: liveScoreEventIdToDbId(event.Eid),
     homeTeam: teamName(event, "T1"),
     awayTeam: teamName(event, "T2"),
+    homeTeamImg: teamImage(event, "T1"),
+    awayTeamImg: teamImage(event, "T2"),
     groupName: extractGroupName(stage),
     stage: extractStage(stage),
     roundNumber: event.ErnInf ? Number.parseInt(event.ErnInf, 10) || null : null,
