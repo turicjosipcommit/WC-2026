@@ -55,7 +55,7 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
       <div
         role="tablist"
         aria-label="Match status"
-        className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+        className="horizontal-scroll-tabs -mx-1 flex gap-1 overflow-x-auto px-1 pb-2"
       >
         {FIXTURE_STATUS_FILTERS.map(({ id, label }) => {
           const isActive = statusFilter === id;

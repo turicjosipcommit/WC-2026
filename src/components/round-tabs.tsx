@@ -73,7 +73,7 @@ export function RoundTabs<T extends { match: Match }>({
       <div
         role="tablist"
         aria-label={ariaLabel}
-        className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+        className="horizontal-scroll-tabs -mx-1 mb-4 flex gap-1 overflow-x-auto px-1 pb-2"
       >
         {groups.map((group) => {
           const isActive = group.key === selectedKey;

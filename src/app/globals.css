@@ -17,3 +17,26 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+.horizontal-scroll-tabs {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.horizontal-scroll-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-scroll-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.horizontal-scroll-tabs::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+  border-radius: 9999px;
+}
+
+.horizontal-scroll-tabs::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
+}
