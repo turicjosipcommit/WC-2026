@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncResultsFromLiveScore } from "@/lib/livescore/sync";
+import { getLastSyncedAt, recordLastSync } from "@/lib/sync-metadata";
 import { evaluateResultsSync } from "@/lib/sync-window";
 
 function authorize(request: Request) {
@@ -20,19 +21,26 @@ export async function POST(request: Request) {
 
     const decision = await evaluateResultsSync({ force });
     if (!decision.run) {
+      await recordLastSync();
+      const lastSyncedAt = await getLastSyncedAt();
+
       return NextResponse.json({
         ok: true,
         skipped: true,
         reason: decision.reason,
         activeMatches: decision.activeMatches.length,
+        lastSyncedAt: lastSyncedAt?.toISOString() ?? null,
       });
     }
 
     const result = await syncResultsFromLiveScore();
+    const lastSyncedAt = await getLastSyncedAt();
+
     return NextResponse.json({
       ok: true,
       skipped: false,
       reason: decision.reason,
+      lastSyncedAt: lastSyncedAt?.toISOString() ?? null,
       ...result,
     });
   } catch (error) {

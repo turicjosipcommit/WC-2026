@@ -14,6 +14,9 @@ async function main() {
   const decision = await evaluateResultsSync({ force });
 
   if (!decision.run) {
+    const { recordLastSync } = await import("../src/lib/sync-metadata");
+    await recordLastSync();
+
     console.log(
       JSON.stringify(
         {
