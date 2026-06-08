@@ -89,10 +89,8 @@ export function buildLeaderboardRows(
     if (scoredPhases.length === 0) {
       row.points_breakdown.pending += 1;
     } else {
-      for (const points of scoredPhases) {
-        row.total_points += points ?? 0;
-        applyPointsBreakdown(row.points_breakdown, points);
-      }
+      row.total_points += scoredPhases.reduce((sum, points) => sum + (points ?? 0), 0);
+      applyPointsBreakdown(row.points_breakdown, prediction.points_awarded);
     }
 
     if (prediction.points_awarded === SCORING.exact) {

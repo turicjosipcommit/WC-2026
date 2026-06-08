@@ -1,6 +1,5 @@
 import { Nav } from "@/components/nav";
 import { LeaderboardTable } from "@/components/leaderboard-table";
-import { ScoringRules } from "@/components/scoring-rules";
 import { buildLeaderboardRows } from "@/lib/leaderboard";
 import { getDataClient } from "@/lib/supabase/data";
 
@@ -28,7 +27,6 @@ export default async function HomePage() {
             One group, ~15 friends, full tournament bragging rights.
           </p>
         </div>
-        <ScoringRules />
         <LeaderboardTable rows={leaderboard} />
       </main>
     </>

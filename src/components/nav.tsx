@@ -6,6 +6,7 @@ const links: NavLink[] = [
   { href: "/", label: "Leaderboard" },
   { href: "/fixtures", label: "Fixtures" },
   { href: "/my-picks", label: "My picks" },
+  { href: "/scoring", label: "Scoring" },
 ];
 
 export async function Nav() {
