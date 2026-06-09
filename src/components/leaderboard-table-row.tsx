@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import { formatPointsWithLabel } from "@/lib/i18n";
 import { POINTS_BREAKDOWN_LABELS } from "@/lib/leaderboard";
 import type { LeaderboardRow } from "@/lib/types";
 
@@ -42,7 +43,7 @@ function BreakdownList({ row }: { row: LeaderboardRow }) {
           >
             <span>
               {label}
-              {points != null ? `: ${points} pts` : ""}
+              {points != null ? `: ${formatPointsWithLabel(points)}` : ""}
             </span>
             <span className="font-semibold text-slate-900">{count}</span>
           </li>
@@ -70,7 +71,7 @@ export function LeaderboardTableRow({
               type="button"
               onClick={() => setOpen((value) => !value)}
               aria-expanded={open}
-              aria-label={`${open ? "Hide" : "Show"} points breakdown for ${row.display_name}`}
+              aria-label={`${open ? "Sakrij" : "Prikaži"} raspodjelu bodova za ${row.display_name}`}
               className="rounded p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
             >
               <ChevronIcon open={open} />

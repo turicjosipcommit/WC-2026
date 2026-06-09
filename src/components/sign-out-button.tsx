@@ -23,7 +23,7 @@ export function SignOutButton({ className = "", onSignedOut }: SignOutButtonProp
       }}
       className={`rounded-lg px-3 py-2 text-sm text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 ${className}`}
     >
-      Sign out
+      Odjava
     </button>
   );
 }

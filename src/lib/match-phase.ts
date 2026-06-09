@@ -62,12 +62,12 @@ export function formatPredictionSummary(prediction: Pick<
   | "pred_pen_home"
   | "pred_pen_away"
 >) {
-  const parts = [`FT ${prediction.pred_home}-${prediction.pred_away}`];
+  const parts = [`90′ ${prediction.pred_home}-${prediction.pred_away}`];
   const et = formatScoreLine(prediction.pred_et_home, prediction.pred_et_away);
   const pen = formatScoreLine(prediction.pred_pen_home, prediction.pred_pen_away);
 
-  if (et) parts.push(`ET ${et.replace(" - ", "-")}`);
-  if (pen) parts.push(`Pens ${pen.replace(" - ", "-")}`);
+  if (et) parts.push(`prod. ${et.replace(" - ", "-")}`);
+  if (pen) parts.push(`pen. ${pen.replace(" - ", "-")}`);
 
   return parts.join(" · ");
 }

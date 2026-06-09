@@ -1,3 +1,4 @@
+import { formatPickCount } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import type { Match, Prediction } from "@/lib/types";
 
@@ -69,7 +70,7 @@ export async function fetchMyPicks(): Promise<{
     picks,
     error:
       missingMatches > 0
-        ? `${missingMatches} prediction(s) could not be linked to a match.`
+        ? `Nije bilo moguće povezati ${formatPickCount(missingMatches)} s utakmicom.`
         : null,
     userId: user.id,
   };

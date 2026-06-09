@@ -16,6 +16,7 @@ import {
   groupGoalsByTeam,
 } from "@/lib/match-goals";
 import { formatKickoff } from "@/lib/format-datetime";
+import { formatMatchStatus, formatPointsShort } from "@/lib/i18n";
 import type { Match, MatchGoal, Prediction } from "@/lib/types";
 
 interface MatchCardProps {
@@ -90,7 +91,7 @@ export function MatchCard({
         <span>
           {match.group_name ? `${match.group_name} · ` : ""}
           {match.stage}
-          {match.round_number ? ` · MD ${match.round_number}` : ""}
+          {match.round_number ? ` · K${match.round_number}` : ""}
         </span>
         <span
           className={
@@ -101,7 +102,7 @@ export function MatchCard({
                 : "rounded-full bg-slate-100 px-2 py-1 uppercase tracking-wide text-slate-600"
           }
         >
-          {match.status}
+          {formatMatchStatus(match.status)}
         </span>
       </div>
 
@@ -141,7 +142,7 @@ export function MatchCard({
                     <p className="text-[10px] sm:text-xs">AET {etScore}</p>
                   )}
                   {match.went_to_penalties && penScore && (
-                    <p className="text-[10px] sm:text-xs">Pens {penScore}</p>
+                    <p className="text-[10px] sm:text-xs">Pen. {penScore}</p>
                   )}
                 </div>
               ) : (
@@ -170,21 +171,21 @@ export function MatchCard({
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <p className="text-slate-600">
               {predictionsDisabled ? (
-                "Login is disabled — predictions are read-only for now."
+                "Prijava je isključena — prognoze su trenutačno samo za čitanje."
               ) : (
                 <>
-                  Your pick:{" "}
+                  Vaša prognoza:{" "}
                   <span className="font-semibold text-slate-900">
                     {prediction
                       ? formatPredictionSummary(prediction)
-                      : "No prediction"}
+                      : "Nema prognoze"}
                   </span>
                 </>
               )}
             </p>
             {!predictionsDisabled && prediction && hasScoredPrediction(prediction) && (
               <p className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">
-                +{userPoints} pts
+                {formatPointsShort(userPoints)}
               </p>
             )}
           </div>
@@ -196,7 +197,7 @@ export function MatchCard({
       {canRevealOtherPicks(match) && otherPicks.length > 0 && (
         <details className="mt-4 border-t border-slate-100 pt-3">
           <summary className="cursor-pointer select-none text-sm font-medium text-slate-600 hover:text-slate-900">
-            Other picks ({otherPicks.length})
+            Ostale prognoze ({otherPicks.length})
           </summary>
           <ul className="mt-2 grid gap-1.5">
             {otherPicks.map((pick) => (
@@ -211,7 +212,7 @@ export function MatchCard({
                     pick.etPointsAwarded != null ||
                     pick.penPointsAwarded != null) && (
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                      +{otherPickPoints(pick)} pts
+                      {formatPointsShort(otherPickPoints(pick))}
                     </span>
                   )}
                 </span>

@@ -24,7 +24,7 @@ function parseOptionalPair(home: unknown, away: unknown) {
   }
 
   if (parsedHome === null || parsedAway === null) {
-    return { error: "Extra time and penalty scores must include both home and away values" };
+    return { error: "Rezultat produžetka i penala mora uključivati domaćina i gosta" };
   }
 
   return { home: parsedHome, away: parsedAway };
@@ -40,7 +40,7 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Niste autorizirani" }, { status: 401 });
   }
 
   const { data, error } = await supabase
@@ -59,7 +59,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (isAuthDisabled()) {
     return NextResponse.json(
-      { error: "Login is disabled. Predictions cannot be saved right now." },
+      { error: "Prijava je isključena. Prognoze se trenutačno ne mogu spremiti." },
       { status: 403 }
     );
   }
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Niste autorizirani" }, { status: 401 });
   }
 
   const body = await request.json();
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
   const predAway = parseRequiredScore(body.predAway);
 
   if (!matchId || predHome === null || predAway === null) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    return NextResponse.json({ error: "Neispravan zahtjev" }, { status: 400 });
   }
 
   const etPair = parseOptionalPair(body.predEtHome, body.predEtAway);
@@ -99,19 +99,19 @@ export async function POST(request: Request) {
     .single();
 
   if (matchError || !match) {
-    return NextResponse.json({ error: "Match not found" }, { status: 404 });
+    return NextResponse.json({ error: "Utakmica nije pronađena" }, { status: 404 });
   }
 
   if (new Date(match.kickoff_at) <= new Date()) {
     return NextResponse.json(
-      { error: "Predictions are locked after kickoff" },
+      { error: "Prognoze su zaključane nakon početka utakmice" },
       { status: 403 }
     );
   }
 
   if (!isKnockoutMatch(match) && (etPair.home != null || penPair.home != null)) {
     return NextResponse.json(
-      { error: "Extra time and penalty picks are only available for knockout matches" },
+      { error: "Prognoze za produžetak i penale dostupne su samo u nokaut utakmicama" },
       { status: 400 }
     );
   }

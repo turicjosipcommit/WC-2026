@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   if (error || !data.user) {
     const message =
       error?.message ??
-      "Could not complete sign-in. Try again in the same browser.";
+      "Prijava nije dovršena. Pokušajte ponovno u istom pregledniku.";
     return NextResponse.redirect(
       `${origin}/login?error=auth&message=${encodeURIComponent(message)}`
     );

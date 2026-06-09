@@ -4,6 +4,7 @@ import { isAuthDisabled } from "@/lib/auth-config";
 import { Nav } from "@/components/nav";
 import { MyPicksTabs } from "@/components/my-picks-tabs";
 import { groupPicksByRound, pickDefaultGroupKey } from "@/lib/fixtures-grouping";
+import { formatPickCount, formatRoundCount } from "@/lib/i18n";
 import { fetchMyPicks } from "@/lib/my-picks";
 
 export default async function MyPicksPage() {
@@ -16,11 +17,11 @@ export default async function MyPicksPage() {
       <Nav />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">My picks</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Moje prognoze</h1>
           <p className="mt-1 text-slate-600">
-            All predictions you have submitted so far.
+            Sve prognoze koje ste dosad poslali.
             {picks.length > 0 &&
-              ` ${picks.length} picks across ${roundGroups.length} rounds.`}
+              ` ${formatPickCount(picks.length)} u ${formatRoundCount(roundGroups.length)}.`}
           </p>
         </div>
 
@@ -32,30 +33,30 @@ export default async function MyPicksPage() {
 
         {!userId ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
-            <p>Sign in to view your picks.</p>
+            <p>Prijavite se za pregled svojih prognoza.</p>
             <Link href="/login" className="mt-3 inline-block text-emerald-700 underline">
-              Go to login
+              Idi na prijavu
             </Link>
           </div>
         ) : picks.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
             <p>
               {isAuthDisabled()
-                ? "Login is disabled — sign in later to save and view your picks."
-                : "No picks yet for your account."}
+                ? "Prijava je isključena — prijavite se kasnije za spremanje i pregled prognoza."
+                : "Još nema prognoza za vaš račun."}
             </p>
             {!isAuthDisabled() && (
               <p className="mt-2 text-xs text-slate-500">
-                Picks in the database must use your user id ({userId.slice(0, 8)}…)
-                to appear here.
+                Prognoze u bazi moraju koristiti vaš korisnički ID ({userId.slice(0, 8)}…)
+                da bi se prikazali ovdje.
               </p>
             )}
             <Link href="/fixtures" className="mt-3 inline-block text-emerald-700 underline">
-              Go to fixtures
+              Idi na utakmice
             </Link>
           </div>
         ) : (
-          <Suspense fallback={<div className="text-sm text-slate-500">Loading picks…</div>}>
+          <Suspense fallback={<div className="text-sm text-slate-500">Učitavanje prognoza…</div>}>
             <MyPicksTabs
               groups={roundGroups}
               defaultRoundKey={defaultRoundKey}

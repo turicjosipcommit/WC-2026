@@ -67,7 +67,7 @@ export function NavMenu({ links, showSignOut }: NavMenuProps) {
           type="button"
           aria-expanded={open}
           aria-controls="mobile-nav"
-          aria-label={open ? "Close menu" : "Open menu"}
+          aria-label={open ? "Zatvori izbornik" : "Otvori izbornik"}
           onClick={() => setOpen((value) => !value)}
           className="rounded-lg p-2 text-slate-700 transition hover:bg-slate-100"
         >
@@ -78,7 +78,7 @@ export function NavMenu({ links, showSignOut }: NavMenuProps) {
           <>
             <button
               type="button"
-              aria-label="Close menu"
+              aria-label="Zatvori izbornik"
               className="fixed inset-0 z-40 bg-slate-900/20"
               onClick={() => setOpen(false)}
             />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SAVED_MESSAGE } from "@/lib/i18n";
 import { isKnockoutMatch } from "@/lib/match-phase";
 import type { Match, Prediction } from "@/lib/types";
 
@@ -29,7 +30,7 @@ function ScoreInputGroup({
         {optional ? (
           <span className="hidden font-normal normal-case text-slate-400 sm:inline">
             {" "}
-            (optional)
+            (neobavezno)
           </span>
         ) : null}
       </p>
@@ -40,8 +41,8 @@ function ScoreInputGroup({
           max={20}
           value={home}
           onChange={(e) => onHomeChange(e.target.value)}
-          aria-label={`${label} home`}
-          placeholder="H"
+          aria-label={`${label} domaćin`}
+          placeholder="D"
           className="w-12 rounded-lg border border-slate-300 bg-white px-1.5 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
         />
         <input
@@ -50,8 +51,8 @@ function ScoreInputGroup({
           max={20}
           value={away}
           onChange={(e) => onAwayChange(e.target.value)}
-          aria-label={`${label} away`}
-          placeholder="A"
+          aria-label={`${label} gost`}
+          placeholder="G"
           className="w-12 rounded-lg border border-slate-300 bg-white px-1.5 py-2 text-center text-slate-900 sm:w-16 sm:px-3"
         />
       </div>
@@ -78,7 +79,7 @@ export function PredictionEditor({
   onSaved,
   onCancel,
   showCancel = false,
-  saveLabel = "Save pick",
+  saveLabel = "Spremi prognozu",
 }: PredictionEditorProps) {
   const knockout = isKnockoutMatch(match);
   const [home, setHome] = useState(String(prediction?.pred_home ?? ""));
@@ -112,16 +113,16 @@ export function PredictionEditor({
     setSaving(false);
 
     if (!response.ok) {
-      const errorText = data.error ?? "Could not save prediction";
+      const errorText = data.error ?? "Nije moguće spremiti prognozu";
       setMessage(
         errorText.includes("predictions_user_id_fkey")
-          ? "Your player profile is missing. Sign out, sign in again, then retry."
+          ? "Nedostaje vaš profil igrača. Odjavite se, prijavite ponovno i pokušajte opet."
           : errorText
       );
       return;
     }
 
-    setMessage("Saved");
+    setMessage(SAVED_MESSAGE);
     onSaved?.();
   }
 
@@ -142,8 +143,8 @@ export function PredictionEditor({
           }
         >
           <ScoreInputGroup
-            label="Full time"
-            shortLabel="FT"
+            label="Regularno vrijeme"
+            shortLabel="90′"
             home={home}
             away={away}
             onHomeChange={setHome}
@@ -152,8 +153,8 @@ export function PredictionEditor({
           {knockout && (
             <>
               <ScoreInputGroup
-                label="Extra time"
-                shortLabel="ET"
+                label="Produžetak"
+                shortLabel="Prod."
                 home={etHome}
                 away={etAway}
                 onHomeChange={setEtHome}
@@ -161,8 +162,8 @@ export function PredictionEditor({
                 optional
               />
               <ScoreInputGroup
-                label="Penalties"
-                shortLabel="Pens"
+                label="Penali"
+                shortLabel="Pen."
                 home={penHome}
                 away={penAway}
                 onHomeChange={setPenHome}
@@ -190,7 +191,7 @@ export function PredictionEditor({
                 : "rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
             }
           >
-            {saving ? "Saving..." : saveLabel}
+            {saving ? "Spremanje…" : saveLabel}
           </button>
           {showCancel && onCancel && (
             <button
@@ -199,14 +200,14 @@ export function PredictionEditor({
               onClick={onCancel}
               className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
             >
-              Cancel
+              Odustani
             </button>
           )}
         </div>
       </div>
 
       {message && (
-        <p className={`text-sm ${message === "Saved" ? "text-emerald-600" : "text-red-600"}`}>
+        <p className={`text-sm ${message === SAVED_MESSAGE ? "text-emerald-600" : "text-red-600"}`}>
           {message}
         </p>
       )}

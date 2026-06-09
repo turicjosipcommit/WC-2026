@@ -11,6 +11,7 @@ import { canRevealOtherPicks } from "@/lib/match-phase";
 import { getLastSyncedAt } from "@/lib/sync-metadata";
 import { createClient } from "@/lib/supabase/server";
 import { getDataClient } from "@/lib/supabase/data";
+import { formatMatchCount, formatRoundCount } from "@/lib/i18n";
 import type { Match, MatchGoal, Prediction } from "@/lib/types";
 
 async function getFixtures() {
@@ -76,30 +77,29 @@ export default async function FixturesPage() {
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
         <div>
           <div className="flex items-center justify-between gap-4">
-            <h1 className="text-3xl font-bold text-slate-900">Fixtures</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Utakmice</h1>
             <SyncDataButton
               className="shrink-0"
               lastSyncedAt={lastSyncedAt?.toISOString() ?? null}
             />
           </div>
           <p className="mt-1 text-slate-600">
-            Enter your score predictions before kickoff.
+            Unesite prognoze rezultata prije početka utakmice.
             {fixtures.length > 0 &&
-              ` ${fixtures.length} matches across ${roundGroups.length} rounds.`}
+              ` ${formatMatchCount(fixtures.length)} u ${formatRoundCount(roundGroups.length)}.`}
           </p>
         </div>
 
         {fixtures.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-slate-600">
-            <p>No matches in the database yet.</p>
+            <p>Još nema utakmica u bazi.</p>
             <p className="mt-2 text-sm">
-              Sync fixtures from LiveScore, or run{" "}
-              <code className="rounded bg-slate-100 px-1 text-slate-800">npm run sync:schedule</code>{" "}
-              locally.
+              Sinkronizirajte utakmice s LiveScorea ili lokalno pokrenite{" "}
+              <code className="rounded bg-slate-100 px-1 text-slate-800">npm run sync:schedule</code>.
             </p>
           </div>
         ) : (
-          <Suspense fallback={<div className="text-sm text-slate-500">Loading fixtures…</div>}>
+          <Suspense fallback={<div className="text-sm text-slate-500">Učitavanje utakmica…</div>}>
             <FixturesTabs
               groups={roundGroups}
               predictionsDisabled={predictionsDisabled}

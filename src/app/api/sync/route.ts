@@ -18,7 +18,7 @@ async function requireAuthenticatedUser() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Niste autorizirani" }, { status: 401 });
   }
 
   return null;
@@ -42,7 +42,7 @@ export async function POST() {
       lastSyncedAt: lastSyncedAt?.toISOString() ?? null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Sync failed";
+    const message = error instanceof Error ? error.message : "Sinkronizacija nije uspjela";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

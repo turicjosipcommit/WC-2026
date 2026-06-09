@@ -5,7 +5,7 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
   if (rows.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
-        No players yet. Invite your friends to sign up.
+        Još nema igrača. Pozovite prijatelje da se prijave.
       </p>
     );
   }
@@ -16,11 +16,11 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="px-4 py-3 font-medium">#</th>
-            <th className="px-4 py-3 font-medium">Player</th>
-            <th className="px-4 py-3 font-medium">Points</th>
-            <th className="px-4 py-3 font-medium">Picks</th>
-            <th className="px-4 py-3 font-medium">Exact</th>
-            <th className="px-4 py-3 font-medium">Correct</th>
+            <th className="px-4 py-3 font-medium">Igrač</th>
+            <th className="px-4 py-3 font-medium">Bodovi</th>
+            <th className="px-4 py-3 font-medium">Prognoze</th>
+            <th className="px-4 py-3 font-medium">Točno</th>
+            <th className="px-4 py-3 font-medium">Ishod</th>
           </tr>
         </thead>
         <tbody>

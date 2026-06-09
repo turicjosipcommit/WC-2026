@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "WC Fantasy 2026",
-  description: "Friend group World Cup 2026 score predictions",
+  description: "Prijateljsko prvenstvo prognoza za SP 2026",
   applicationName: "WC Fantasy 2026",
   appleWebApp: {
     capable: true,
@@ -42,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="hr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-gradient-to-b from-emerald-50 via-white to-slate-50 text-slate-900">

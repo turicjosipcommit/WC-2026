@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PredictionEditor } from "@/components/prediction-editor";
 import { TeamLabel } from "@/components/team-label";
 import { formatKickoff } from "@/lib/format-datetime";
+import { formatPointsShort } from "@/lib/i18n";
 import {
   formatPredictionSummary,
   formatScoreLine,
@@ -58,7 +59,7 @@ export function MyPickCard({
             match={match}
             prediction={prediction}
             showCancel
-            saveLabel="Update pick"
+            saveLabel="Ažuriraj prognozu"
             onCancel={() => setEditing(false)}
             onSaved={handleSaved}
           />
@@ -67,7 +68,7 @@ export function MyPickCard({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm">
           <div className="flex flex-wrap gap-4">
             <p>
-              Pick:{" "}
+              Prognoza:{" "}
               <span className="font-semibold text-slate-900">
                 {formatPredictionSummary(prediction)}
               </span>
@@ -82,12 +83,12 @@ export function MyPickCard({
             )}
             {match.status === "finished" && match.went_to_penalties && (
               <p className="text-slate-600">
-                Pens: {formatScoreLine(match.home_score_pen, match.away_score_pen)}
+                Pen.: {formatScoreLine(match.home_score_pen, match.away_score_pen)}
               </p>
             )}
             {hasScoredPrediction(prediction) && (
               <p className="font-semibold text-emerald-600">
-                +{totalPredictionPoints(prediction)} pts
+                {formatPointsShort(totalPredictionPoints(prediction))}
               </p>
             )}
           </div>
@@ -97,11 +98,11 @@ export function MyPickCard({
               onClick={() => setEditing(true)}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              Edit
+              Uredi
             </button>
           )}
           {locked && !predictionsDisabled && (
-            <p className="text-xs text-slate-500">Locked after kickoff</p>
+            <p className="text-xs text-slate-500">Zaključano nakon početka</p>
           )}
         </div>
       )}

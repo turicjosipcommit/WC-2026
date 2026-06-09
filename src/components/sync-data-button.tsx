@@ -38,7 +38,7 @@ export function SyncDataButton({ className = "", lastSyncedAt = null }: SyncData
       };
 
       if (!response.ok) {
-        throw new Error(data.error ?? "Sync failed");
+        throw new Error(data.error ?? "Sinkronizacija nije uspjela");
       }
 
       if (data.lastSyncedAt) {
@@ -51,13 +51,13 @@ export function SyncDataButton({ className = "", lastSyncedAt = null }: SyncData
 
       setMessage(
         upserted > 0 || updated > 0 || scored > 0
-          ? `Synced ${upserted} fixtures, ${updated} results${scored > 0 ? `, ${scored} scored` : ""}.`
-          : "Already up to date."
+          ? `Sinkronizirano ${upserted} utakmica, ${updated} rezultata${scored > 0 ? `, ${scored} bodovano` : ""}.`
+          : "Već je ažurirano."
       );
       router.refresh();
     } catch (error) {
       setIsError(true);
-      setMessage(error instanceof Error ? error.message : "Sync failed");
+      setMessage(error instanceof Error ? error.message : "Sinkronizacija nije uspjela");
     } finally {
       setSyncing(false);
     }
@@ -71,10 +71,10 @@ export function SyncDataButton({ className = "", lastSyncedAt = null }: SyncData
         disabled={syncing}
         className="shrink-0 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
       >
-        {syncing ? "Syncing…" : "Sync data"}
+        {syncing ? "Sinkronizacija…" : "Sinkroniziraj"}
       </button>
       {lastSyncedLabel && (
-        <p className="text-right text-xs text-slate-500">Last synced {lastSyncedLabel}</p>
+        <p className="text-right text-xs text-slate-500">Zadnja sinkronizacija {lastSyncedLabel}</p>
       )}
       {message && (
         <p

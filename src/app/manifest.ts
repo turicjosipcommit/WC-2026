@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "WC Fantasy 2026",
     short_name: "WC Fantasy",
-    description: "Friend group World Cup 2026 score predictions",
+    description: "Prijateljsko prvenstvo prognoza za SP 2026",
     start_url: "/",
     display: "standalone",
     background_color: "#333333",

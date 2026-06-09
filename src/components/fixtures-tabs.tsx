@@ -93,7 +93,7 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
     <div className="flex flex-col gap-4">
       <div
         role="tablist"
-        aria-label="Match status"
+        aria-label="Status utakmice"
         className="horizontal-scroll-tabs -mx-1 flex gap-1 overflow-x-auto px-1 pb-2"
       >
         {FIXTURE_STATUS_FILTERS.map(({ id, label }) => {
@@ -121,7 +121,7 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
       {!predictionsDisabled && (
         <div
           role="tablist"
-          aria-label="Your picks"
+          aria-label="Vaše prognoze"
           className="horizontal-scroll-tabs -mx-1 flex gap-1 overflow-x-auto px-1 pb-2"
         >
           {FIXTURE_PICK_FILTERS.map(({ id, label }) => {
@@ -149,14 +149,14 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
 
       {totalFiltered === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
-          <p>No matches match the current filters.</p>
+          <p>Nema utakmica koje odgovaraju trenutačnim filtrima.</p>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={clearFilters}
               className="mt-3 text-sm font-medium text-emerald-700 hover:text-emerald-600"
             >
-              Show all matches
+              Prikaži sve utakmice
             </button>
           )}
         </div>

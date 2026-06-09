@@ -8,6 +8,7 @@ import {
   pickDefaultGroupKey,
   type RoundGroup,
 } from "@/lib/fixtures-grouping";
+import { formatMatchCount, formatPickCount } from "@/lib/i18n";
 import type { Match } from "@/lib/types";
 
 type RoundTabsProps<T extends { match: Match }> = {
@@ -23,8 +24,8 @@ export function RoundTabs<T extends { match: Match }>({
   groups,
   basePath,
   defaultRoundKey: defaultRoundKeyProp,
-  ariaLabel = "Match rounds",
-  countLabel = "pick",
+  ariaLabel = "Kola utakmica",
+  countLabel = "prognoza",
   children,
 }: RoundTabsProps<T>) {
   const router = useRouter();
@@ -64,9 +65,7 @@ export function RoundTabs<T extends { match: Match }>({
 
   const count = selectedGroup.items.length;
   const countText =
-    countLabel === "match"
-      ? `${count} match${count === 1 ? "" : "es"}`
-      : `${count} pick${count === 1 ? "" : "s"}`;
+    countLabel === "match" ? formatMatchCount(count) : formatPickCount(count);
 
   return (
     <div className="flex flex-col gap-4">

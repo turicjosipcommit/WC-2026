@@ -9,7 +9,7 @@ export function formatGoalMinute(goal: Pick<MatchGoal, "minute" | "stoppage_minu
 
 export function formatGoalLabel(goal: MatchGoal) {
   const suffix =
-    goal.goal_type === "own_goal" ? " (OG)" : goal.goal_type === "penalty" ? " (P)" : "";
+    goal.goal_type === "own_goal" ? " (ag)" : goal.goal_type === "penalty" ? " (pen)" : "";
   return `${formatGoalMinute(goal)} ${goal.player_name}${suffix}`;
 }
 

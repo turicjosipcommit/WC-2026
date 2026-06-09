@@ -13,7 +13,7 @@ export default function LoginPage() {
     authMessage
       ? decodeURIComponent(authMessage)
       : authError
-        ? "Sign-in failed. Please try again."
+        ? "Prijava nije uspjela. Pokušajte ponovno."
         : null
   );
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -30,20 +30,26 @@ export default function LoginPage() {
     !!message &&
     (message.includes("Cannot reach Supabase") ||
       message.includes("Missing") ||
+      message.includes("Nedostaje") ||
       message.toLowerCase().includes("fail") ||
       message.toLowerCase().includes("error") ||
+      message.toLowerCase().includes("greška") ||
+      message.toLowerCase().includes("nije uspjela") ||
+      message.toLowerCase().includes("nije uspio") ||
       message.includes("disabled") ||
-      message.includes("Unable"));
+      message.includes("isključena") ||
+      message.includes("Unable") ||
+      message.includes("Nije moguće"));
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-12">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/60">
         <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">
-          Friend group fantasy
+          Prijateljsko prvenstvo
         </p>
-        <h1 className="mt-2 text-3xl font-bold text-slate-900">WC 2026 Predictions</h1>
+        <h1 className="mt-2 text-3xl font-bold text-slate-900">SP 2026 Prognoze</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sign in with Google to join the leaderboard.
+          Prijavite se putem Googlea i pridružite se ljestvici.
         </p>
 
         <div className="mt-8">

@@ -22,7 +22,7 @@ export default async function HomePage() {
       <Nav />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Leaderboard</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Ljestvica</h1>
         </div>
         <LeaderboardTable rows={leaderboard} />
       </main>

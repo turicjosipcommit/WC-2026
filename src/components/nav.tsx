@@ -3,10 +3,10 @@ import { isAuthDisabled } from "@/lib/auth-config";
 import { createClient } from "@/lib/supabase/server";
 
 const links: NavLink[] = [
-  { href: "/", label: "Leaderboard" },
-  { href: "/fixtures", label: "Fixtures" },
-  { href: "/my-picks", label: "My picks" },
-  { href: "/scoring", label: "Scoring" },
+  { href: "/", label: "Ljestvica" },
+  { href: "/fixtures", label: "Utakmice" },
+  { href: "/my-picks", label: "Moje prognoze" },
+  { href: "/scoring", label: "Bodovanje" },
 ];
 
 export async function Nav() {
@@ -29,8 +29,8 @@ export async function Nav() {
     ).data;
 
   const displayLabel = authDisabled && !user
-    ? "Guest (login disabled)"
-    : (profile?.display_name ?? user?.email ?? "Guest");
+    ? "Gost (prijava isključena)"
+    : (profile?.display_name ?? user?.email ?? "Gost");
 
   return (
     <header className="relative border-b border-slate-200 bg-white/90 backdrop-blur">

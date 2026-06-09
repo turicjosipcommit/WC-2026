@@ -1,3 +1,4 @@
+import { UNKNOWN_DISPLAY_NAME } from "@/lib/i18n";
 import type { Match, MatchGoal, Prediction, Profile } from "@/lib/types";
 
 export type RoundGroup<T> = {
@@ -34,10 +35,10 @@ export const FIXTURE_STATUS_FILTERS: {
   id: FixtureStatusFilter;
   label: string;
 }[] = [
-  { id: "all", label: "All" },
-  { id: "scheduled", label: "Scheduled" },
-  { id: "active", label: "Active" },
-  { id: "finished", label: "Finished" },
+  { id: "all", label: "Sve" },
+  { id: "scheduled", label: "Zakazano" },
+  { id: "active", label: "U tijeku" },
+  { id: "finished", label: "Završeno" },
 ];
 
 export function parseFixtureStatusFilter(value: string | null): FixtureStatusFilter {
@@ -65,9 +66,9 @@ export const FIXTURE_PICK_FILTERS: {
   id: FixturePickFilter;
   label: string;
 }[] = [
-  { id: "all", label: "All" },
-  { id: "picked", label: "Picked" },
-  { id: "unpicked", label: "Unpicked" },
+  { id: "all", label: "Sve" },
+  { id: "picked", label: "Prognozirano" },
+  { id: "unpicked", label: "Bez prognoze" },
 ];
 
 export function parseFixturePickFilter(value: string | null): FixturePickFilter {
@@ -112,7 +113,7 @@ export function groupOtherPicksByMatch(
 
     const pick: OtherPick = {
       userId: prediction.user_id,
-      displayName: profileById.get(prediction.user_id) ?? "Unknown",
+      displayName: profileById.get(prediction.user_id) ?? UNKNOWN_DISPLAY_NAME,
       predHome: prediction.pred_home,
       predAway: prediction.pred_away,
       predEtHome: prediction.pred_et_home,
@@ -143,7 +144,7 @@ export type PickGroup = RoundGroup<{
 
 export function formatRoundTabLabel(match: Match) {
   if (match.stage === "Group stage" && match.round_number != null) {
-    return `MD ${match.round_number}`;
+    return `K${match.round_number}`;
   }
 
   if (match.round_number != null) {
@@ -155,11 +156,11 @@ export function formatRoundTabLabel(match: Match) {
 
 export function formatRoundLabel(match: Match) {
   if (match.stage === "Group stage" && match.round_number != null) {
-    return `Matchday ${match.round_number}`;
+    return `Kolo ${match.round_number}`;
   }
 
   if (match.round_number != null) {
-    return `${match.stage} · Round ${match.round_number}`;
+    return `${match.stage} · Kolo ${match.round_number}`;
   }
 
   return match.stage;

@@ -107,14 +107,14 @@ export function buildLeaderboardRows(
 }
 
 export const POINTS_BREAKDOWN_LABELS = [
-  { key: "exact" as const, label: "Exact score", points: SCORING.exact },
+  { key: "exact" as const, label: "Točan rezultat", points: SCORING.exact },
   {
     key: "resultAndOneTeam" as const,
-    label: "Result + one team score",
+    label: "Ishod + jedan rezultat momčadi",
     points: SCORING.resultAndOneTeam,
   },
-  { key: "resultOnly" as const, label: "Result only", points: SCORING.resultOnly },
-  { key: "oneTeamOnly" as const, label: "One team score", points: SCORING.oneTeamOnly },
-  { key: "none" as const, label: "No points", points: SCORING.none },
-  { key: "pending" as const, label: "Pending", points: null },
+  { key: "resultOnly" as const, label: "Samo ishod", points: SCORING.resultOnly },
+  { key: "oneTeamOnly" as const, label: "Jedan rezultat momčadi", points: SCORING.oneTeamOnly },
+  { key: "none" as const, label: "Bez bodova", points: SCORING.none },
+  { key: "pending" as const, label: "Na čekanju", points: null },
 ];

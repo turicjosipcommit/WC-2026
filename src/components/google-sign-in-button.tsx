@@ -73,7 +73,7 @@ export function GoogleSignInButton({
             });
 
             if (error || !data.user) {
-              onError(error?.message ?? "Google sign-in failed.");
+              onError(error?.message ?? "Google prijava nije uspjela.");
               onLoadingChange(false);
               return;
             }
@@ -89,7 +89,7 @@ export function GoogleSignInButton({
             router.refresh();
           } catch (cause) {
             onError(
-              cause instanceof Error ? cause.message : "Google sign-in failed."
+              cause instanceof Error ? cause.message : "Google prijava nije uspjela."
             );
             onLoadingChange(false);
           }
@@ -101,6 +101,7 @@ export function GoogleSignInButton({
         theme: "outline",
         size: "large",
         text: "continue_with",
+        locale: "hr",
         width: buttonRef.current.offsetWidth || 360,
       });
     }
@@ -115,9 +116,9 @@ export function GoogleSignInButton({
   if (!clientId) {
     return (
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        Add <code className="text-amber-950">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code>{" "}
-        to <code className="text-amber-950">.env.local</code>, then restart the
-        dev server.
+        Dodajte <code className="text-amber-950">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code>{" "}
+        u <code className="text-amber-950">.env.local</code>, zatim ponovno pokrenite
+        razvojni poslužitelj.
       </p>
     );
   }
