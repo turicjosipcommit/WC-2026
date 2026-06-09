@@ -11,8 +11,8 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <table className="min-w-full text-left text-sm">
+    <div className="horizontal-scroll min-w-0 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table className="w-full min-w-[640px] text-left text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="px-4 py-3 font-medium">#</th>
