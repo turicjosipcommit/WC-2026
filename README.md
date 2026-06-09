@@ -93,41 +93,48 @@ npm run sync:results
 
 ## Cron / automation
 
-### Option A — GitHub Actions (recommended)
+### Supabase Cron (recommended)
 
-Add repo secrets:
+Migration `009_sync_results_cron.sql` schedules **`sync-wc-results`** every **5 minutes** using `pg_cron` + `pg_net`. It POSTs to your deployed app:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `CRON_SECRET` (optional, for deployed app ping)
-
-**Production (WC 2026)** — `.github/workflows/sync-results.yml` runs every **5 minutes** (UTC) against the production Supabase project and only syncs when needed:
-
-1. **Active window** — any match is `live`, or within 5 minutes before kickoff through 3 hours after (covers ET/pens)
-2. **Fallback** — full sync at **:00** and **:30** each hour (includes a best-effort schedule refresh)
-3. **Manual run** — GitHub “Run workflow” always syncs (`SYNC_FORCE=1`)
-
-Between games the job exits immediately with no LiveScore calls.
-
-**Dev friendlies** — `.github/workflows/sync-friendlies-results.yml` uses the same gating but targets the **dev** Supabase project with International Friendlies (`537` / `details-w`). Add repo secrets with these **exact names**:
-
-- `DEV_NEXT_PUBLIC_SUPABASE_URL` — full URL, e.g. `https://algpcgabntzngujtloly.supabase.co` (not just the project ref)
-- `DEV_SUPABASE_SERVICE_ROLE_KEY` — dev service role key from Supabase → Settings → API
-- `DEV_CRON_SECRET` (optional, if you ping a dev deployment)
-
-Optional repo variable: `DEV_APP_URL` (dev deployment URL for the internal sync ping).
-
-Load the friendlies schedule once on dev:
-
-```bash
-npm run sync:friendlies:schedule
+```http
+POST /api/internal/sync-results
+x-cron-secret: <CRON_SECRET>
 ```
 
-`npm run sync:results` still forces a full WC sync anytime locally; use `npm run sync:friendlies:results` for friendlies.
+The app applies the same gating as before:
 
-### Option B — Manual / local cron
+1. **Active window** — any match is `live`, or within 5 minutes before kickoff through 3 hours after (covers ET/pens)
+2. **Fallback** — full sync at **:00** and **:30** UTC (includes a best-effort schedule refresh)
+3. **Idle** — no LiveScore calls between windows
 
-On your Mac during the tournament:
+**One-time setup per Supabase project** (production and dev friendlies are separate projects):
+
+1. Apply migrations (`supabase db push` or run `009_sync_results_cron.sql` in the SQL editor).
+2. Deploy the Next.js app with `CRON_SECRET` and LiveScore env vars set.
+3. Store secrets in **Vault** (Supabase → SQL editor). Edit and run `scripts/setup-sync-cron.sql`:
+   - `sync_app_url` — deployed app URL, e.g. `https://your-app.vercel.app` (no trailing slash)
+   - `cron_secret` — must match `CRON_SECRET` on that deployment
+
+**Dev friendlies:** use the dev Supabase project, point `sync_app_url` at the dev deployment (with `LIVESCORE_COMPETITION_ID=537`), and use that deployment’s `CRON_SECRET`.
+
+Verify the job: `select jobid, jobname, schedule from cron.job where jobname = 'sync-wc-results';`
+
+Cron run history: Supabase Dashboard → **Integrations → Cron** (or query `cron.job_run_details`).
+
+### Manual / local
+
+```bash
+npm run sync:results:if-needed
+```
+
+Friendlies dev project locally:
+
+```bash
+npm run sync:friendlies:results:if-needed
+```
+
+On your Mac during the tournament (alternative to Supabase Cron):
 
 ```bash
 # crontab -e

@@ -1,0 +1,5 @@
+# Minimal Supabase project config.
+# Link locally with: supabase link --project-ref <ref>
+
+[db.migrations]
+enabled = true

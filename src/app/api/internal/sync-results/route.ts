@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { syncResultsFromLiveScore } from "@/lib/livescore/sync";
+import { syncResultsFromLiveScore, syncScheduleFromLiveScore } from "@/lib/livescore/sync";
 import { getLastSyncedAt, recordLastSync } from "@/lib/sync-metadata";
 import { evaluateResultsSync } from "@/lib/sync-window";
 
@@ -33,6 +33,15 @@ export async function POST(request: Request) {
       });
     }
 
+    let schedule: Awaited<ReturnType<typeof syncScheduleFromLiveScore>> | undefined;
+    if (decision.reason === "fallback") {
+      try {
+        schedule = await syncScheduleFromLiveScore();
+      } catch (scheduleError) {
+        console.warn("Schedule sync failed during fallback:", scheduleError);
+      }
+    }
+
     const result = await syncResultsFromLiveScore();
     const lastSyncedAt = await getLastSyncedAt();
 
@@ -41,6 +50,7 @@ export async function POST(request: Request) {
       skipped: false,
       reason: decision.reason,
       lastSyncedAt: lastSyncedAt?.toISOString() ?? null,
+      schedule,
       ...result,
     });
   } catch (error) {
