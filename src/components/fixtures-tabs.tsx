@@ -5,11 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MatchCard } from "@/components/match-card";
 import { RoundTabs } from "@/components/round-tabs";
 import {
+  FIXTURE_PICK_FILTERS,
   FIXTURE_STATUS_FILTERS,
   groupFixturesByRound,
+  matchesFixturePickFilter,
   matchesFixtureStatusFilter,
+  parseFixturePickFilter,
   parseFixtureStatusFilter,
   type FixtureGroup,
+  type FixturePickFilter,
   type FixtureStatusFilter,
 } from "@/lib/fixtures-grouping";
 
@@ -23,27 +27,62 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
   const searchParams = useSearchParams();
 
   const statusFilter = parseFixtureStatusFilter(searchParams.get("status"));
+  const pickFilter = parseFixturePickFilter(searchParams.get("pick"));
 
   const filteredGroups = useMemo(() => {
     const items = groups.flatMap((group) => group.items);
-    const filtered = items.filter((item) =>
-      matchesFixtureStatusFilter(item.match, statusFilter)
+    const filtered = items.filter(
+      (item) =>
+        matchesFixtureStatusFilter(item.match, statusFilter) &&
+        matchesFixturePickFilter(item, pickFilter)
     );
     return groupFixturesByRound(filtered);
-  }, [groups, statusFilter]);
+  }, [groups, statusFilter, pickFilter]);
 
-  const selectStatus = useCallback(
-    (filter: FixtureStatusFilter) => {
+  const updateSearchParams = useCallback(
+    (updates: { status?: FixtureStatusFilter; pick?: FixturePickFilter }) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (filter === "all") {
-        params.delete("status");
-      } else {
-        params.set("status", filter);
+
+      if (updates.status !== undefined) {
+        if (updates.status === "all") {
+          params.delete("status");
+        } else {
+          params.set("status", updates.status);
+        }
       }
+
+      if (updates.pick !== undefined) {
+        if (updates.pick === "all") {
+          params.delete("pick");
+        } else {
+          params.set("pick", updates.pick);
+        }
+      }
+
       router.replace(`/fixtures?${params.toString()}`, { scroll: false });
     },
     [router, searchParams]
   );
+
+  const selectStatus = useCallback(
+    (filter: FixtureStatusFilter) => {
+      updateSearchParams({ status: filter });
+    },
+    [updateSearchParams]
+  );
+
+  const selectPick = useCallback(
+    (filter: FixturePickFilter) => {
+      updateSearchParams({ pick: filter });
+    },
+    [updateSearchParams]
+  );
+
+  const clearFilters = useCallback(() => {
+    updateSearchParams({ status: "all", pick: "all" });
+  }, [updateSearchParams]);
+
+  const hasActiveFilters = statusFilter !== "all" || pickFilter !== "all";
 
   const totalFiltered = filteredGroups.reduce(
     (count, group) => count + group.items.length,
@@ -79,13 +118,42 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
         })}
       </div>
 
+      {!predictionsDisabled && (
+        <div
+          role="tablist"
+          aria-label="Your picks"
+          className="horizontal-scroll-tabs -mx-1 flex gap-1 overflow-x-auto px-1 pb-2"
+        >
+          {FIXTURE_PICK_FILTERS.map(({ id, label }) => {
+            const isActive = pickFilter === id;
+
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => selectPick(id)}
+                className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-emerald-700 text-white shadow-sm"
+                    : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {totalFiltered === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
-          <p>No {statusFilter === "all" ? "" : `${statusFilter} `}matches in this view.</p>
-          {statusFilter !== "all" && (
+          <p>No matches match the current filters.</p>
+          {hasActiveFilters && (
             <button
               type="button"
-              onClick={() => selectStatus("all")}
+              onClick={clearFilters}
               className="mt-3 text-sm font-medium text-emerald-700 hover:text-emerald-600"
             >
               Show all matches

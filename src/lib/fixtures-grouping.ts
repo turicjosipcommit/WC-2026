@@ -59,6 +59,33 @@ export function matchesFixtureStatusFilter(
   return match.status === "finished";
 }
 
+export type FixturePickFilter = "all" | "picked" | "unpicked";
+
+export const FIXTURE_PICK_FILTERS: {
+  id: FixturePickFilter;
+  label: string;
+}[] = [
+  { id: "all", label: "All" },
+  { id: "picked", label: "Picked" },
+  { id: "unpicked", label: "Unpicked" },
+];
+
+export function parseFixturePickFilter(value: string | null): FixturePickFilter {
+  if (value === "picked" || value === "unpicked") {
+    return value;
+  }
+  return "all";
+}
+
+export function matchesFixturePickFilter(
+  item: Pick<FixtureGroup["items"][number], "prediction">,
+  filter: FixturePickFilter
+) {
+  if (filter === "all") return true;
+  const hasPick = item.prediction != null;
+  return filter === "picked" ? hasPick : !hasPick;
+}
+
 export function groupOtherPicksByMatch(
   predictions: Pick<
     Prediction,
