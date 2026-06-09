@@ -12,14 +12,16 @@
     "sync:results:if-needed": "tsx scripts/sync-results-if-needed.ts",
     "sync:friendlies:schedule": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-schedule.ts",
     "sync:friendlies:results": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results.ts",
-    "sync:friendlies:results:if-needed": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results-if-needed.ts"
+    "sync:friendlies:results:if-needed": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results-if-needed.ts",
+    "send:reminders": "tsx scripts/send-reminders.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.107.0",
     "next": "16.2.7",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

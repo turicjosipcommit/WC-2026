@@ -56,6 +56,8 @@ Fill in:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 - `CRON_SECRET` (random string)
+- `APP_URL` (deployed app URL, used in reminder emails)
+- `RESEND_API_KEY`, `REMINDER_FROM_EMAIL` (prediction reminders via Resend)
 
 Optional LiveScore overrides (defaults target WC 2026):
 
@@ -121,6 +123,34 @@ The app applies the same gating as before:
 Verify the job: `select jobid, jobname, schedule from cron.job where jobname = 'sync-wc-results';`
 
 Cron run history: Supabase Dashboard → **Integrations → Cron** (or query `cron.job_run_details`).
+
+### Prediction reminders (Resend)
+
+Migration `011_send_reminders_cron.sql` schedules **`send-prediction-reminders`** every **5 minutes**. It POSTs to:
+
+```http
+POST /api/internal/send-reminders
+x-cron-secret: <CRON_SECRET>
+```
+
+For each match kicking off in about **30 minutes** (±3 min window), users without a prognoza receive one email. Sends are deduplicated in `prediction_reminders`.
+
+**Vercel env vars** (in addition to cron/sync vars):
+
+- `RESEND_API_KEY` — from [Resend](https://resend.com)
+- `REMINDER_FROM_EMAIL` — verified sender, e.g. `WC Fantasy 2026 <noreply@yourdomain.com>` (test: `onboarding@resend.dev` only delivers to your Resend account email)
+- `APP_URL` — e.g. `https://wc-2026-turicjosipcommits-projects.vercel.app`
+
+Optional: `REMINDER_MINUTES_BEFORE` (default `30`), `REMINDER_WINDOW_MINUTES` (default `3`).
+
+Manual test locally:
+
+```bash
+npm run send:reminders
+REMINDER_FORCE=1 npm run send:reminders   # ignore kickoff window
+```
+
+Verify cron job: `select jobid, jobname, schedule from cron.job where jobname = 'send-prediction-reminders';`
 
 ### Manual / local
 
