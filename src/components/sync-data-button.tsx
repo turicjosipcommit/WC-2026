@@ -1,5 +1,6 @@
 "use client";
 
+import { formatSyncedAt } from "@/lib/format-datetime";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -7,22 +8,6 @@ type SyncDataButtonProps = {
   className?: string;
   lastSyncedAt?: string | null;
 };
-
-function formatLastSyncedAt(iso: string | null) {
-  if (!iso) {
-    return null;
-  }
-
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
 
 export function SyncDataButton({ className = "", lastSyncedAt = null }: SyncDataButtonProps) {
   const router = useRouter();
@@ -35,7 +20,7 @@ export function SyncDataButton({ className = "", lastSyncedAt = null }: SyncData
     setSyncedAt(lastSyncedAt);
   }, [lastSyncedAt]);
 
-  const lastSyncedLabel = formatLastSyncedAt(syncedAt);
+  const lastSyncedLabel = syncedAt ? formatSyncedAt(syncedAt) : null;
 
   async function syncData() {
     setSyncing(true);

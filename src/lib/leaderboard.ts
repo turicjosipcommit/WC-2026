@@ -1,4 +1,4 @@
-import { SCORING } from "@/lib/scoring";
+import { countCorrectResultPhases, countExactScorePhases, SCORING } from "@/lib/scoring";
 import type { LeaderboardRow, PointsBreakdown } from "@/lib/types";
 
 type ProfileRow = {
@@ -73,6 +73,7 @@ export function buildLeaderboardRows(
       total_points: 0,
       predictions_count: 0,
       exact_scores: 0,
+      correct_results: 0,
       points_breakdown: emptyPointsBreakdown(),
     });
   }
@@ -93,13 +94,15 @@ export function buildLeaderboardRows(
       applyPointsBreakdown(row.points_breakdown, prediction.points_awarded);
     }
 
-    if (prediction.points_awarded === SCORING.exact) {
-      row.exact_scores += 1;
-    }
+    row.exact_scores += countExactScorePhases(prediction);
+    row.correct_results += countCorrectResultPhases(prediction);
   }
 
   return [...rows.values()].sort(
-    (a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores
+    (a, b) =>
+      b.total_points - a.total_points ||
+      b.exact_scores - a.exact_scores ||
+      b.correct_results - a.correct_results
   );
 }
 

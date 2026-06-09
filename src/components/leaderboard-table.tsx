@@ -20,6 +20,7 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
             <th className="px-4 py-3 font-medium">Points</th>
             <th className="px-4 py-3 font-medium">Picks</th>
             <th className="px-4 py-3 font-medium">Exact</th>
+            <th className="px-4 py-3 font-medium">Correct</th>
           </tr>
         </thead>
         <tbody>

@@ -87,6 +87,7 @@ export interface LeaderboardRow {
   total_points: number;
   predictions_count: number;
   exact_scores: number;
+  correct_results: number;
   points_breakdown: PointsBreakdown;
 }
 

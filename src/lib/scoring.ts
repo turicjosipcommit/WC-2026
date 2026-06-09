@@ -56,6 +56,93 @@ export function calculatePoints(
   return SCORING.none;
 }
 
+export function awardedCorrectResult(pointsAwarded: number | null) {
+  return pointsAwarded != null && pointsAwarded >= SCORING.resultOnly;
+}
+
+export function awardedCorrectEt(etPointsAwarded: number | null) {
+  return (
+    etPointsAwarded != null && etPointsAwarded >= KNOCKOUT_ET_POINTS.outcomeOnly
+  );
+}
+
+export function awardedCorrectPen(penPointsAwarded: number | null) {
+  return (
+    penPointsAwarded != null && penPointsAwarded >= KNOCKOUT_PEN_POINTS.outcome
+  );
+}
+
+export function countCorrectResultPhases(prediction: {
+  points_awarded: number | null;
+  et_points_awarded: number | null;
+  pen_points_awarded: number | null;
+}) {
+  let count = 0;
+
+  if (awardedCorrectResult(prediction.points_awarded)) {
+    count += 1;
+  }
+
+  if (awardedCorrectEt(prediction.et_points_awarded)) {
+    count += 1;
+  }
+
+  if (awardedCorrectPen(prediction.pen_points_awarded)) {
+    count += 1;
+  }
+
+  return count;
+}
+
+export function awardedExact90(pointsAwarded: number | null) {
+  return pointsAwarded === SCORING.exact;
+}
+
+export function awardedExactEt(
+  etPointsAwarded: number | null,
+  penPointsAwarded: number | null
+) {
+  if (etPointsAwarded === KNOCKOUT_ET_POINTS.sameScoreAs90) {
+    return true;
+  }
+
+  // 3 ET pts without pens means correct ET winner only, not an exact ET scoreline.
+  if (
+    etPointsAwarded === KNOCKOUT_ET_POINTS.exactDifferentDrawOrWin &&
+    penPointsAwarded !== null
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+export function awardedExactPen(penPointsAwarded: number | null) {
+  return penPointsAwarded === KNOCKOUT_PEN_POINTS.exact;
+}
+
+export function countExactScorePhases(prediction: {
+  points_awarded: number | null;
+  et_points_awarded: number | null;
+  pen_points_awarded: number | null;
+}) {
+  let count = 0;
+
+  if (awardedExact90(prediction.points_awarded)) {
+    count += 1;
+  }
+
+  if (awardedExactEt(prediction.et_points_awarded, prediction.pen_points_awarded)) {
+    count += 1;
+  }
+
+  if (awardedExactPen(prediction.pen_points_awarded)) {
+    count += 1;
+  }
+
+  return count;
+}
+
 function isExact90Prediction(
   prediction: { pred_home: number; pred_away: number },
   home90: number,

@@ -15,6 +15,7 @@ import {
   formatGoalLabel,
   groupGoalsByTeam,
 } from "@/lib/match-goals";
+import { formatKickoff } from "@/lib/format-datetime";
 import type { Match, MatchGoal, Prediction } from "@/lib/types";
 
 interface MatchCardProps {
@@ -65,13 +66,7 @@ export function MatchCard({
 }: MatchCardProps) {
   const locked = isPredictionLocked(match, predictionsDisabled);
 
-  const kickoff = new Date(match.kickoff_at).toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const kickoff = formatKickoff(match.kickoff_at);
 
   const ftScore = formatScoreLine(
     match.home_score_90 ?? match.home_score,

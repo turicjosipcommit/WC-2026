@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PredictionEditor } from "@/components/prediction-editor";
 import { TeamLabel } from "@/components/team-label";
+import { formatKickoff } from "@/lib/format-datetime";
 import {
   formatPredictionSummary,
   formatScoreLine,
@@ -47,7 +48,7 @@ export function MyPickCard({
           <TeamLabel name={match.away_team} img={match.away_team_img} />
         </p>
         <p className="text-sm text-slate-500">
-          {new Date(match.kickoff_at).toLocaleString()}
+          {formatKickoff(match.kickoff_at)}
         </p>
       </div>
 

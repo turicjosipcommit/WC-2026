@@ -84,10 +84,11 @@ export function LeaderboardTableRow({
         </td>
         <td className="px-4 py-3 text-slate-600">{row.predictions_count}</td>
         <td className="px-4 py-3 text-slate-600">{row.exact_scores}</td>
+        <td className="px-4 py-3 text-slate-600">{row.correct_results}</td>
       </tr>
       {open && (
         <tr className="border-t border-slate-100 bg-slate-50/60">
-          <td colSpan={5} className="px-4 pb-3 pt-1 pl-11">
+          <td colSpan={6} className="px-4 pb-3 pt-1 pl-11">
             <BreakdownList row={row} />
           </td>
         </tr>
