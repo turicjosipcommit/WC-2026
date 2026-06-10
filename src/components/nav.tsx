@@ -33,7 +33,7 @@ export async function Nav() {
     : (profile?.display_name ?? user?.email ?? "Gost");
 
   return (
-    <header className="relative border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.2em] text-emerald-700">
