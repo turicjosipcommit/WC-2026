@@ -1,7 +1,14 @@
 import { LeaderboardTableRow } from "@/components/leaderboard-table-row";
+import type { LeaderboardMode } from "@/lib/leaderboard";
 import type { LeaderboardRow } from "@/lib/types";
 
-export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
+export function LeaderboardTable({
+  rows,
+  mode = "official",
+}: {
+  rows: LeaderboardRow[];
+  mode?: LeaderboardMode;
+}) {
   if (rows.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
@@ -25,7 +32,7 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <LeaderboardTableRow key={row.user_id} row={row} index={index} />
+            <LeaderboardTableRow key={row.user_id} row={row} index={index} mode={mode} />
           ))}
         </tbody>
       </table>

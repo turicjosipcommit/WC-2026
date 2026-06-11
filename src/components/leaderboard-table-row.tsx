@@ -56,11 +56,15 @@ function BreakdownList({ row }: { row: LeaderboardRow }) {
 export function LeaderboardTableRow({
   row,
   index,
+  mode = "official",
 }: {
   row: LeaderboardRow;
   index: number;
+  mode?: "official" | "live";
 }) {
   const [open, setOpen] = useState(false);
+  const showProvisionalDelta =
+    mode === "live" && row.live_provisional_points > 0;
 
   return (
     <Fragment>
@@ -80,8 +84,13 @@ export function LeaderboardTableRow({
           </div>
         </td>
         <td className="px-4 py-3 font-medium text-slate-900">{row.display_name}</td>
-        <td className="px-4 py-3 text-lg font-bold text-emerald-600">
-          {row.total_points}
+        <td className="px-4 py-3">
+          <div className="text-lg font-bold text-emerald-600">{row.total_points}</div>
+          {showProvisionalDelta && (
+            <div className="text-xs font-medium text-amber-700">
+              +{row.live_provisional_points} privremeno
+            </div>
+          )}
         </td>
         <td className="px-4 py-3 text-slate-600">{row.predictions_count}</td>
         <td className="px-4 py-3 text-slate-600">{row.exact_scores}</td>

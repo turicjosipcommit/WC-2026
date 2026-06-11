@@ -1,24 +1,28 @@
 import { NextResponse } from "next/server";
-import { buildLeaderboardRows } from "@/lib/leaderboard";
+import { buildLeaderboardRows, type LeaderboardMode } from "@/lib/leaderboard";
+import { fetchLeaderboardInput } from "@/lib/leaderboard-data";
 import { getDataClient } from "@/lib/supabase/data";
 
-export async function GET() {
-  const supabase = await getDataClient();
+function parseMode(value: string | null): LeaderboardMode {
+  return value === "live" ? "live" : "official";
+}
 
-  const [{ data: profiles, error: profilesError }, { data: predictions, error: predictionsError }] =
-    await Promise.all([
-      supabase.from("profiles").select("id, display_name"),
-      supabase.from("predictions").select("user_id, points_awarded, et_points_awarded, pen_points_awarded"),
-    ]);
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const mode = parseMode(searchParams.get("mode"));
 
-  if (profilesError || predictionsError) {
-    return NextResponse.json(
-      { error: profilesError?.message ?? predictionsError?.message },
-      { status: 500 }
-    );
+  try {
+    const supabase = await getDataClient();
+    const { profiles, predictions, liveMatchCount } = await fetchLeaderboardInput(supabase);
+    const leaderboard = buildLeaderboardRows(profiles, predictions, mode);
+
+    return NextResponse.json({
+      mode,
+      liveMatchCount,
+      leaderboard,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load leaderboard";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const leaderboard = buildLeaderboardRows(profiles ?? [], predictions ?? []);
-
-  return NextResponse.json({ leaderboard });
 }

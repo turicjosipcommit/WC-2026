@@ -97,7 +97,7 @@ npm run sync:results
 
 ### Supabase Cron (recommended)
 
-Migration `009_sync_results_cron.sql` schedules **`sync-wc-results`** every **5 minutes** using `pg_cron` + `pg_net`. It POSTs to your deployed app:
+Migration `009_sync_results_cron.sql` schedules **`sync-wc-results`** every **minute** using `pg_cron` + `pg_net`. It POSTs to your deployed app:
 
 ```http
 POST /api/internal/sync-results

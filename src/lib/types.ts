@@ -85,6 +85,8 @@ export interface LeaderboardRow {
   user_id: string;
   display_name: string;
   total_points: number;
+  official_total_points: number;
+  live_provisional_points: number;
   predictions_count: number;
   exact_scores: number;
   correct_results: number;

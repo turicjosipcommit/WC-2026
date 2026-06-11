@@ -274,37 +274,45 @@ function scorePenaltyPoints(
   return 0;
 }
 
-export function scorePredictionPhases(
-  prediction: {
-    pred_home: number;
-    pred_away: number;
-    pred_et_home: number | null;
-    pred_et_away: number | null;
-    pred_pen_home: number | null;
-    pred_pen_away: number | null;
-  },
-  match: {
-    home_score: number | null;
-    away_score: number | null;
-    home_score_90: number | null;
-    away_score_90: number | null;
-    home_score_et: number | null;
-    away_score_et: number | null;
-    home_score_pen: number | null;
-    away_score_pen: number | null;
-    went_to_extra_time: boolean;
-    went_to_penalties: boolean;
-    status: string;
-  }
-) {
-  if (match.status !== "finished") {
-    return {
-      points_awarded: null as number | null,
-      et_points_awarded: null as number | null,
-      pen_points_awarded: null as number | null,
-    };
-  }
+export type PredictionScoringInput = {
+  pred_home: number;
+  pred_away: number;
+  pred_et_home: number | null;
+  pred_et_away: number | null;
+  pred_pen_home: number | null;
+  pred_pen_away: number | null;
+};
 
+export type MatchScoringSnapshot = {
+  home_score: number | null;
+  away_score: number | null;
+  home_score_90: number | null;
+  away_score_90: number | null;
+  home_score_et: number | null;
+  away_score_et: number | null;
+  home_score_pen: number | null;
+  away_score_pen: number | null;
+  went_to_extra_time: boolean;
+  went_to_penalties: boolean;
+  status: string;
+};
+
+export type PredictionPhasePoints = {
+  points_awarded: number | null;
+  et_points_awarded: number | null;
+  pen_points_awarded: number | null;
+};
+
+const EMPTY_PHASE_POINTS: PredictionPhasePoints = {
+  points_awarded: null,
+  et_points_awarded: null,
+  pen_points_awarded: null,
+};
+
+export function computePredictionPhasePoints(
+  prediction: PredictionScoringInput,
+  match: MatchScoringSnapshot
+): PredictionPhasePoints {
   const home90 = match.home_score_90 ?? match.home_score;
   const away90 = match.away_score_90 ?? match.away_score;
   const exact90 =
@@ -320,4 +328,32 @@ export function scorePredictionPhases(
       : null,
     pen_points_awarded: scorePenaltyPoints(prediction, match, exact90),
   };
+}
+
+export function scorePredictionPhases(
+  prediction: PredictionScoringInput,
+  match: MatchScoringSnapshot
+): PredictionPhasePoints {
+  if (match.status !== "finished") {
+    return EMPTY_PHASE_POINTS;
+  }
+
+  return computePredictionPhasePoints(prediction, match);
+}
+
+export function scoreProvisionalPredictionPhases(
+  prediction: PredictionScoringInput,
+  match: MatchScoringSnapshot
+): PredictionPhasePoints {
+  if (match.status !== "live") {
+    return EMPTY_PHASE_POINTS;
+  }
+
+  return computePredictionPhasePoints(prediction, match);
+}
+
+export function sumPhasePoints(phases: PredictionPhasePoints) {
+  return [phases.points_awarded, phases.et_points_awarded, phases.pen_points_awarded]
+    .filter((points): points is number => points !== null)
+    .reduce((sum, points) => sum + points, 0);
 }

@@ -70,6 +70,6 @@ $$;
 
 select cron.schedule(
   'sync-wc-results',
-  '*/5 * * * *',
+  '* * * * *',
   $$select public.invoke_sync_results_cron();$$
 );

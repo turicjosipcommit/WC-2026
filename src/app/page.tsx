@@ -1,21 +1,22 @@
 import { Nav } from "@/components/nav";
-import { LeaderboardTable } from "@/components/leaderboard-table";
+import { LeaderboardPanel } from "@/components/leaderboard-panel";
 import { buildLeaderboardRows } from "@/lib/leaderboard";
+import { fetchLeaderboardInput } from "@/lib/leaderboard-data";
 import { getDataClient } from "@/lib/supabase/data";
 
-async function getLeaderboard() {
+async function getLeaderboardData() {
   const supabase = await getDataClient();
+  const { profiles, predictions, liveMatchCount } = await fetchLeaderboardInput(supabase);
 
-  const [{ data: profiles }, { data: predictions }] = await Promise.all([
-    supabase.from("profiles").select("id, display_name"),
-    supabase.from("predictions").select("user_id, points_awarded, et_points_awarded, pen_points_awarded"),
-  ]);
-
-  return buildLeaderboardRows(profiles ?? [], predictions ?? []);
+  return {
+    official: buildLeaderboardRows(profiles, predictions, "official"),
+    live: buildLeaderboardRows(profiles, predictions, "live"),
+    liveMatchCount,
+  };
 }
 
 export default async function HomePage() {
-  const leaderboard = await getLeaderboard();
+  const { official, live, liveMatchCount } = await getLeaderboardData();
 
   return (
     <>
@@ -24,7 +25,11 @@ export default async function HomePage() {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Ljestvica</h1>
         </div>
-        <LeaderboardTable rows={leaderboard} />
+        <LeaderboardPanel
+          initialOfficial={official}
+          initialLive={live}
+          initialLiveMatchCount={liveMatchCount}
+        />
       </main>
     </>
   );
