@@ -50,6 +50,9 @@ export function FixturesTabs({
         if (updates.status === "all") {
           params.delete("status");
         } else {
+          if (updates.status === "finished") {
+            console.log("finished");
+          }
           params.set("status", updates.status);
         }
       }
@@ -169,20 +172,41 @@ export function FixturesTabs({
           basePath="/fixtures"
           countLabel="match"
         >
-          {(items) => (
-            <div className="grid gap-4">
-              {items.map(({ match, prediction, otherPicks, goals }) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  prediction={prediction}
-                  otherPicks={otherPicks}
-                  goals={goals}
-                  predictionsDisabled={predictionsDisabled}
-                />
-              ))}
-            </div>
-          )}
+          {(items) =>
+            statusFilter === "finished" ? (
+              <div className="grid gap-4">
+                {items
+                  .sort(
+                    (a, b) =>
+                      new Date(b.match.kickoff_at).getTime() -
+                      new Date(a.match.kickoff_at).getTime(),
+                  )
+                  .map(({ match, prediction, otherPicks, goals }) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      prediction={prediction}
+                      otherPicks={otherPicks}
+                      goals={goals}
+                      predictionsDisabled={predictionsDisabled}
+                    />
+                  ))}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {items.map(({ match, prediction, otherPicks, goals }) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    prediction={prediction}
+                    otherPicks={otherPicks}
+                    goals={goals}
+                    predictionsDisabled={predictionsDisabled}
+                  />
+                ))}
+              </div>
+            )
+          }
         </RoundTabs>
       )}
     </div>
