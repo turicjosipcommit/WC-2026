@@ -11,10 +11,7 @@ import {
   canRevealOtherPicks,
   totalPredictionPoints,
 } from "@/lib/match-phase";
-import {
-  formatGoalLabel,
-  groupGoalsByTeam,
-} from "@/lib/match-goals";
+import { formatGoalLabel, groupGoalsByTeam } from "@/lib/match-goals";
 import { formatKickoff } from "@/lib/format-datetime";
 import { formatMatchStatus, formatPointsShort } from "@/lib/i18n";
 import type { Match, MatchGoal, Prediction } from "@/lib/types";
@@ -71,7 +68,7 @@ export function MatchCard({
 
   const ftScore = formatScoreLine(
     match.home_score_90 ?? match.home_score,
-    match.away_score_90 ?? match.away_score
+    match.away_score_90 ?? match.away_score,
   );
   const etScore = formatScoreLine(match.home_score_et, match.away_score_et);
   const penScore = formatScoreLine(match.home_score_pen, match.away_score_pen);
@@ -83,7 +80,8 @@ export function MatchCard({
   const userPoints = prediction ? totalPredictionPoints(prediction) : 0;
   const { home: homeGoals, away: awayGoals } = groupGoalsByTeam(goals);
   const showGoals =
-    goals.length > 0 && (match.status === "live" || match.status === "finished");
+    goals.length > 0 &&
+    (match.status === "live" || match.status === "finished");
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -107,7 +105,9 @@ export function MatchCard({
       </div>
 
       <div className="space-y-2">
-        <p className="text-center text-xs text-slate-500 sm:hidden">{kickoff}</p>
+        <p className="text-center text-xs text-slate-500 sm:hidden">
+          {kickoff}
+        </p>
 
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3">
           <TeamLabel
@@ -137,7 +137,9 @@ export function MatchCard({
             <div className="shrink-0 px-1 text-center text-xs text-slate-500 sm:text-sm">
               {match.status === "finished" ? (
                 <div className="space-y-0.5">
-                  <p className="text-base font-bold text-slate-700 sm:text-xl">FT</p>
+                  <p className="text-base font-bold text-slate-700 sm:text-xl">
+                    FT
+                  </p>
                   {match.went_to_extra_time && etScore && (
                     <p className="text-[10px] sm:text-xs">AET {etScore}</p>
                   )}
@@ -146,10 +148,16 @@ export function MatchCard({
                   )}
                 </div>
               ) : (
-                <p className={`text-base font-bold sm:text-xl ${scoreClassName}`}>{ftScore}</p>
+                <p
+                  className={`text-base font-bold sm:text-xl ${scoreClassName}`}
+                >
+                  {ftScore}
+                </p>
               )}
             </div>
-            <p className={`text-right text-2xl font-bold sm:text-3xl ${scoreClassName}`}>
+            <p
+              className={`text-right text-2xl font-bold sm:text-3xl ${scoreClassName}`}
+            >
               {awayScoreDisplay}
             </p>
           </div>
@@ -183,11 +191,13 @@ export function MatchCard({
                 </>
               )}
             </p>
-            {!predictionsDisabled && prediction && hasScoredPrediction(prediction) && (
-              <p className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">
-                {formatPointsShort(userPoints)}
-              </p>
-            )}
+            {!predictionsDisabled &&
+              prediction &&
+              hasScoredPrediction(prediction) && (
+                <p className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">
+                  {formatPointsShort(userPoints)}
+                </p>
+              )}
           </div>
         ) : (
           <PredictionEditor match={match} prediction={prediction} />
@@ -200,24 +210,30 @@ export function MatchCard({
             Ostale prognoze ({otherPicks.length})
           </summary>
           <ul className="mt-2 grid gap-1.5">
-            {otherPicks.map((pick) => (
-              <li
-                key={pick.userId}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
-              >
-                <span className="font-medium text-slate-800">{pick.displayName}</span>
-                <span className="flex items-center gap-2 text-slate-600">
-                  <span className="font-semibold text-slate-900">{otherPickSummary(pick)}</span>
-                  {(pick.pointsAwarded != null ||
-                    pick.etPointsAwarded != null ||
-                    pick.penPointsAwarded != null) && (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                      {formatPointsShort(otherPickPoints(pick))}
+            {otherPicks
+              .sort((a, b) => (b.pointsAwarded ?? 0) - (a.pointsAwarded ?? 0))
+              .map((pick) => (
+                <li
+                  key={pick.userId}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-slate-800">
+                    {pick.displayName}
+                  </span>
+                  <span className="flex items-center gap-2 text-slate-600">
+                    <span className="font-semibold text-slate-900">
+                      {otherPickSummary(pick)}
                     </span>
-                  )}
-                </span>
-              </li>
-            ))}
+                    {(pick.pointsAwarded != null ||
+                      pick.etPointsAwarded != null ||
+                      pick.penPointsAwarded != null) && (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                        {formatPointsShort(otherPickPoints(pick))}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
           </ul>
         </details>
       )}
