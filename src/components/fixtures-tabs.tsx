@@ -171,22 +171,16 @@ export function FixturesTabs({
         >
           {(items) => (
             <div className="grid gap-4">
-              {items
-                .sort(
-                  (a, b) =>
-                    new Date(b.match.kickoff_at).getTime() -
-                    new Date(a.match.kickoff_at).getTime(),
-                )
-                .map(({ match, prediction, otherPicks, goals }) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    prediction={prediction}
-                    otherPicks={otherPicks}
-                    goals={goals}
-                    predictionsDisabled={predictionsDisabled}
-                  />
-                ))}
+              {items.map(({ match, prediction, otherPicks, goals }) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  prediction={prediction}
+                  otherPicks={otherPicks}
+                  goals={goals}
+                  predictionsDisabled={predictionsDisabled}
+                />
+              ))}
             </div>
           )}
         </RoundTabs>
