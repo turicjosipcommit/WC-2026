@@ -1,10 +1,7 @@
 import { scorePredictionPhases } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Match } from "@/lib/types";
-import {
-  fetchAllScheduleEvents,
-  fetchMatchIncidents,
-} from "./client";
+import { fetchAllScheduleEvents, fetchMatchIncidents } from "./client";
 import { parseGoalsFromIncidents } from "./incidents";
 import { mapLiveScoreStatus, isLiveScoreInPlayStatus } from "./mappers";
 import { recordLastSync } from "@/lib/sync-metadata";
@@ -63,12 +60,13 @@ function eventToMatchRow(event: LiveScoreNormalizedEvent) {
     away_team_img: event.awayTeamImg,
     group_name: event.groupName,
     stage: event.stage,
-    round_number: event.roundNumber,
     kickoff_at: new Date(event.startTimestamp * 1000).toISOString(),
     status,
     ...scores,
     scored_at:
-      status === "finished" && scores.home_score != null && scores.away_score != null
+      status === "finished" &&
+      scores.home_score != null &&
+      scores.away_score != null
         ? new Date().toISOString()
         : null,
   };
@@ -152,7 +150,7 @@ async function syncMatchGoals(matchId: string, livescoreEventId: number) {
     goals.map((goal) => ({
       match_id: matchId,
       ...goal,
-    }))
+    })),
   );
 
   if (insertError) {
