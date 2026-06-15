@@ -22,7 +22,10 @@ type FixturesTabsProps = {
   predictionsDisabled: boolean;
 };
 
-export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps) {
+export function FixturesTabs({
+  groups,
+  predictionsDisabled,
+}: FixturesTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -34,7 +37,7 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
     const filtered = items.filter(
       (item) =>
         matchesFixtureStatusFilter(item.match, statusFilter) &&
-        matchesFixturePickFilter(item, pickFilter)
+        matchesFixturePickFilter(item, pickFilter),
     );
     return groupFixturesByRound(filtered);
   }, [groups, statusFilter, pickFilter]);
@@ -61,21 +64,21 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
 
       router.replace(`/fixtures?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    [router, searchParams],
   );
 
   const selectStatus = useCallback(
     (filter: FixtureStatusFilter) => {
       updateSearchParams({ status: filter });
     },
-    [updateSearchParams]
+    [updateSearchParams],
   );
 
   const selectPick = useCallback(
     (filter: FixturePickFilter) => {
       updateSearchParams({ pick: filter });
     },
-    [updateSearchParams]
+    [updateSearchParams],
   );
 
   const clearFilters = useCallback(() => {
@@ -86,7 +89,7 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
 
   const totalFiltered = filteredGroups.reduce(
     (count, group) => count + group.items.length,
-    0
+    0,
   );
 
   return (
@@ -161,19 +164,29 @@ export function FixturesTabs({ groups, predictionsDisabled }: FixturesTabsProps)
           )}
         </div>
       ) : (
-        <RoundTabs groups={filteredGroups} basePath="/fixtures" countLabel="match">
+        <RoundTabs
+          groups={filteredGroups}
+          basePath="/fixtures"
+          countLabel="match"
+        >
           {(items) => (
             <div className="grid gap-4">
-              {items.map(({ match, prediction, otherPicks, goals }) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  prediction={prediction}
-                  otherPicks={otherPicks}
-                  goals={goals}
-                  predictionsDisabled={predictionsDisabled}
-                />
-              ))}
+              {items
+                .sort(
+                  (a, b) =>
+                    new Date(b.match.kickoff_at).getTime() -
+                    new Date(a.match.kickoff_at).getTime(),
+                )
+                .map(({ match, prediction, otherPicks, goals }) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    prediction={prediction}
+                    otherPicks={otherPicks}
+                    goals={goals}
+                    predictionsDisabled={predictionsDisabled}
+                  />
+                ))}
             </div>
           )}
         </RoundTabs>
