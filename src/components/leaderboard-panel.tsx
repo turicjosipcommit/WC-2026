@@ -122,7 +122,11 @@ export function LeaderboardPanel({
         </p>
       )}
 
-      <LeaderboardTable rows={rows} mode={mode} />
+      <LeaderboardTable
+        rows={rows}
+        mode={mode}
+        officialRows={mode === "live" ? initialOfficial : undefined}
+      />
     </div>
   );
 }

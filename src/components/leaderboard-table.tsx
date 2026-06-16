@@ -5,9 +5,11 @@ import type { LeaderboardRow } from "@/lib/types";
 export function LeaderboardTable({
   rows,
   mode = "official",
+  officialRows,
 }: {
   rows: LeaderboardRow[];
   mode?: LeaderboardMode;
+  officialRows?: LeaderboardRow[];
 }) {
   if (rows.length === 0) {
     return (
@@ -16,6 +18,10 @@ export function LeaderboardTable({
       </p>
     );
   }
+
+  const officialPositionMap =
+    officialRows &&
+    new Map(officialRows.map((r, i) => [r.user_id, i + 1]));
 
   return (
     <div className="horizontal-scroll min-w-0 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -31,9 +37,20 @@ export function LeaderboardTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
-            <LeaderboardTableRow key={row.user_id} row={row} index={index} mode={mode} />
-          ))}
+          {rows.map((row, index) => {
+            const officialPos = officialPositionMap?.get(row.user_id);
+            const positionDelta =
+              officialPos != null ? officialPos - (index + 1) : undefined;
+            return (
+              <LeaderboardTableRow
+                key={row.user_id}
+                row={row}
+                index={index}
+                mode={mode}
+                positionDelta={positionDelta}
+              />
+            );
+          })}
         </tbody>
       </table>
     </div>

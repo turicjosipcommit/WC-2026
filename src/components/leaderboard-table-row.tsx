@@ -53,14 +53,40 @@ function BreakdownList({ row }: { row: LeaderboardRow }) {
   );
 }
 
+function PositionDelta({ delta }: { delta: number }) {
+  if (delta > 0) {
+    return (
+      <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600">
+        <svg viewBox="0 0 12 12" fill="currentColor" className="h-3 w-3" aria-hidden="true">
+          <path d="M6 2l4 6H2l4-6z" />
+        </svg>
+        {delta}
+      </span>
+    );
+  }
+  if (delta < 0) {
+    return (
+      <span className="flex items-center gap-0.5 text-xs font-medium text-red-500">
+        <svg viewBox="0 0 12 12" fill="currentColor" className="h-3 w-3" aria-hidden="true">
+          <path d="M6 10L2 4h8l-4 6z" />
+        </svg>
+        {Math.abs(delta)}
+      </span>
+    );
+  }
+  return <span className="text-xs text-slate-400">–</span>;
+}
+
 export function LeaderboardTableRow({
   row,
   index,
   mode = "official",
+  positionDelta,
 }: {
   row: LeaderboardRow;
   index: number;
   mode?: "official" | "live";
+  positionDelta?: number;
 }) {
   const [open, setOpen] = useState(false);
   const showProvisionalDelta =
@@ -81,6 +107,7 @@ export function LeaderboardTableRow({
               <ChevronIcon open={open} />
             </button>
             <span>{index + 1}</span>
+            {positionDelta != null && <PositionDelta delta={positionDelta} />}
           </div>
         </td>
         <td className="px-4 py-3 font-medium text-slate-900">{row.display_name}</td>
