@@ -95,6 +95,21 @@ export async function syncScheduleFromLiveScore() {
   return { upserted, total: events.length };
 }
 
+async function hasUnscoredPredictions(matchId: string) {
+  const supabase = createAdminClient();
+  const { count, error } = await supabase
+    .from("predictions")
+    .select("id", { count: "exact", head: true })
+    .eq("match_id", matchId)
+    .is("points_awarded", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (count ?? 0) > 0;
+}
+
 async function scoreMatchPredictions(match: Match) {
   if (match.status !== "finished") {
     return 0;
@@ -204,9 +219,16 @@ async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
     goalsSynced = await syncMatchGoals(updated.id, event.id);
   }
 
-  if (isFinished && (!wasFinished || scoresChanged)) {
-    const scored = await scoreMatchPredictions(updated as Match);
-    return { updated: true, scored, goalsSynced };
+  if (isFinished) {
+    const shouldScore =
+      !wasFinished ||
+      scoresChanged ||
+      (await hasUnscoredPredictions(updated.id));
+
+    if (shouldScore) {
+      const scored = await scoreMatchPredictions(updated as Match);
+      return { updated: true, scored, goalsSynced };
+    }
   }
 
   return { updated: true, scored: 0, goalsSynced };
