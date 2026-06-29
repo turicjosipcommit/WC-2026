@@ -4,6 +4,7 @@ import type { OtherPick } from "@/lib/fixtures-grouping";
 import { PredictionEditor } from "@/components/prediction-editor";
 import { TeamLabel } from "@/components/team-label";
 import {
+  computePickPoints,
   formatPredictionSummary,
   formatScoreLine,
   hasScoredPrediction,
@@ -35,12 +36,12 @@ function otherPickSummary(pick: OtherPick) {
   });
 }
 
-function otherPickPoints(pick: OtherPick) {
-  return (
-    (pick.pointsAwarded ?? 0) +
-    (pick.etPointsAwarded ?? 0) +
-    (pick.penPointsAwarded ?? 0)
-  );
+function otherPickHasScoredPoints(pick: OtherPick) {
+  return hasScoredPrediction({
+    points_awarded: pick.pointsAwarded,
+    et_points_awarded: pick.etPointsAwarded,
+    pen_points_awarded: pick.penPointsAwarded,
+  });
 }
 
 function GoalList({ goals }: { goals: MatchGoal[] }) {
@@ -78,6 +79,9 @@ export function MatchCard({
     match.status === "live" ? "text-red-600" : "text-emerald-600";
   const [homeScoreDisplay, awayScoreDisplay] = ftScore?.split(" - ") ?? [];
   const userPoints = prediction ? totalPredictionPoints(prediction) : 0;
+  const sortedOtherPicks = [...otherPicks].sort(
+    (a, b) => computePickPoints(b, match) - computePickPoints(a, match),
+  );
   const { home: homeGoals, away: awayGoals } = groupGoalsByTeam(goals);
   const showGoals =
     goals.length > 0 &&
@@ -210,9 +214,12 @@ export function MatchCard({
             Ostale prognoze ({otherPicks.length})
           </summary>
           <ul className="mt-2 grid gap-1.5">
-            {otherPicks
-              .sort((a, b) => (b.pointsAwarded ?? 0) - (a.pointsAwarded ?? 0))
-              .map((pick) => (
+            {sortedOtherPicks.map((pick) => {
+              const points = computePickPoints(pick, match);
+              const showPoints =
+                match.status === "live" || otherPickHasScoredPoints(pick);
+
+              return (
                 <li
                   key={pick.userId}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
@@ -224,16 +231,15 @@ export function MatchCard({
                     <span className="font-semibold text-slate-900">
                       {otherPickSummary(pick)}
                     </span>
-                    {(pick.pointsAwarded != null ||
-                      pick.etPointsAwarded != null ||
-                      pick.penPointsAwarded != null) && (
+                    {showPoints && (
                       <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                        {formatPointsShort(otherPickPoints(pick))}
+                        {formatPointsShort(points)}
                       </span>
                     )}
                   </span>
                 </li>
-              ))}
+              );
+            })}
           </ul>
         </details>
       )}
