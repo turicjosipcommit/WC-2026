@@ -11,6 +11,7 @@ import { canRevealOtherPicks } from "@/lib/match-phase";
 import { getLastSyncedAt } from "@/lib/sync-metadata";
 import { createClient } from "@/lib/supabase/server";
 import { getDataClient } from "@/lib/supabase/data";
+import { fetchAllPaginated } from "@/lib/supabase/fetch-all";
 import { formatMatchCount, formatRoundCount } from "@/lib/i18n";
 import type { Match, MatchGoal, Prediction } from "@/lib/types";
 
@@ -24,28 +25,49 @@ async function getFixtures() {
   const [
     { data: matches },
     { data: matchGoals },
-    { data: userPredictions },
-    { data: allPredictions },
-    { data: profiles },
+    userPredictionsResult,
+    profilesResult,
   ] = await Promise.all([
     supabase.from("matches").select("*").order("kickoff_at", { ascending: true }),
     supabase.from("match_goals").select("*").order("sort_order", { ascending: true }),
     user
       ? supabase.from("predictions").select("*").eq("user_id", user.id)
-      : Promise.resolve({ data: [] as Prediction[] }),
+      : Promise.resolve({ data: [] as Prediction[], error: null }),
+    supabase.from("profiles").select("id, display_name"),
+  ]);
+
+  const userPredictions = userPredictionsResult.data;
+  const profiles = profilesResult.data;
+
+  const allPredictions = await fetchAllPaginated<
+    Pick<
+      Prediction,
+      | "user_id"
+      | "match_id"
+      | "pred_home"
+      | "pred_away"
+      | "pred_et_home"
+      | "pred_et_away"
+      | "pred_pen_home"
+      | "pred_pen_away"
+      | "points_awarded"
+      | "et_points_awarded"
+      | "pen_points_awarded"
+    >
+  >((range) =>
     supabase
       .from("predictions")
       .select(
         "user_id, match_id, pred_home, pred_away, pred_et_home, pred_et_away, pred_pen_home, pred_pen_away, points_awarded, et_points_awarded, pen_points_awarded"
-      ),
-    supabase.from("profiles").select("id, display_name"),
-  ]);
+      )
+      .range(range.from, range.to)
+  );
 
   const predictionByMatch = new Map(
     (userPredictions ?? []).map((p) => [p.match_id, p as Prediction])
   );
   const otherPicksByMatch = groupOtherPicksByMatch(
-    (allPredictions ?? []) as Prediction[],
+    allPredictions,
     profiles ?? [],
     user?.id
   );

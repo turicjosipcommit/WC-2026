@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LeaderboardPredictionInput } from "@/lib/leaderboard";
+import { fetchAllPaginated } from "@/lib/supabase/fetch-all";
 
 const PREDICTION_SELECT = `
   user_id,
@@ -57,30 +58,33 @@ function normalizeMatch(
 export async function fetchLeaderboardInput(supabase: SupabaseClient) {
   const [
     { data: profiles, error: profilesError },
-    { data: predictions, error: predictionsError },
     { count: liveMatchCount, error: liveCountError },
   ] = await Promise.all([
     supabase.from("profiles").select("id, display_name"),
-    supabase.from("predictions").select(PREDICTION_SELECT),
     supabase
       .from("matches")
       .select("id", { count: "exact", head: true })
       .eq("status", "live"),
   ]);
 
-  if (profilesError) {
-    throw new Error(profilesError.message);
+  let predictions: RawPredictionRow[];
+  try {
+    predictions = await fetchAllPaginated<RawPredictionRow>((range) =>
+      supabase.from("predictions").select(PREDICTION_SELECT).range(range.from, range.to)
+    );
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Failed to load predictions");
   }
 
-  if (predictionsError) {
-    throw new Error(predictionsError.message);
+  if (profilesError) {
+    throw new Error(profilesError.message);
   }
 
   if (liveCountError) {
     throw new Error(liveCountError.message);
   }
 
-  const normalizedPredictions: LeaderboardPredictionInput[] = (predictions ?? []).map(
+  const normalizedPredictions: LeaderboardPredictionInput[] = predictions.map(
     (row) => {
       const prediction = row as RawPredictionRow;
 
