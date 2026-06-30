@@ -13,7 +13,8 @@
     "sync:friendlies:schedule": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-schedule.ts",
     "sync:friendlies:results": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results.ts",
     "sync:friendlies:results:if-needed": "LIVESCORE_COMPETITION_ID=537 LIVESCORE_DETAILS_VARIANT=details-w tsx scripts/sync-results-if-needed.ts",
-    "send:reminders": "tsx scripts/send-reminders.ts"
+    "send:reminders": "tsx scripts/send-reminders.ts",
+    "rescore:finished": "tsx scripts/rescore-finished.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

@@ -62,8 +62,10 @@ export function ScoringRulesContent() {
           Produžetak i penali u nokaut fazama
         </h2>
         <p className="mt-2 text-sm text-slate-600">
-          Neobavezne prognoze za nokaut utakmice. Bonus bodovi vrijede samo ako je vaša{" "}
-          <span className="font-medium text-slate-800">90′ prognoza točna</span>. Bodovi za
+          Neobavezne prognoze za nokaut utakmice. Bonus bodovi vrijede samo ako ste u 90′
+          prognozirali{" "}
+          <span className="font-medium text-slate-800">neriješen rezultat</span> (npr. 1–1, 2–2)
+          — u produžetke se ide samo nakon neriješenog ishoda u regularnom dijelu. Bodovi za
           produžetak i penale dodaju se na regularno vrijeme.
         </p>
 
@@ -80,26 +82,26 @@ export function ScoringRulesContent() {
             <tbody className="text-slate-700">
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+1</td>
-                <td className="px-4 py-3">Točan 90′, samo ishod produžetka (ne točan rezultat)</td>
+                <td className="px-4 py-3">Neriješeno u 90′, samo ishod produžetka (ne točan rezultat)</td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.outcomeOnly}</td>
                 <td className="px-4 py-3">—</td>
               </tr>
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+1+1</td>
-                <td className="px-4 py-3">Točan 90′, ishod produžetka, pobjednik na penalima</td>
+                <td className="px-4 py-3">Neriješeno u 90′, ishod produžetka, pobjednik na penalima</td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.outcomeOnly}</td>
                 <td className="px-4 py-3">{KNOCKOUT_PEN_POINTS.outcome}</td>
               </tr>
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+1+2</td>
-                <td className="px-4 py-3">Točan 90′, ishod produžetka, točan rezultat na penalima</td>
+                <td className="px-4 py-3">Neriješeno u 90′, ishod produžetka, točan rezultat na penalima</td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.outcomeOnly}</td>
                 <td className="px-4 py-3">{KNOCKOUT_PEN_POINTS.exact}</td>
               </tr>
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+2+1</td>
                 <td className="px-4 py-3">
-                  Točan 90′, ukupni rezultat nakon produžetka isti kao u 90′, pobjednik na
+                  Neriješeno u 90′, ukupni rezultat nakon produžetka isti kao u 90′, pobjednik na
                   penalima
                 </td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.sameScoreAs90}</td>
@@ -108,7 +110,7 @@ export function ScoringRulesContent() {
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+2+2</td>
                 <td className="px-4 py-3">
-                  Točan 90′, ukupni rezultat nakon produžetka isti kao u 90′, točan rezultat na
+                  Neriješeno u 90′, ukupni rezultat nakon produžetka isti kao u 90′, točan rezultat na
                   penalima
                 </td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.sameScoreAs90}</td>
@@ -117,7 +119,7 @@ export function ScoringRulesContent() {
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+3</td>
                 <td className="px-4 py-3">
-                  Točan 90′, prognoza na pobjedu u produžetku i utakmica završava tamo (bez penala)
+                  Neriješeno u 90′, prognoza na pobjedu u produžetku i utakmica završava tamo (bez penala)
                 </td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.exactDifferentDrawOrWin}</td>
                 <td className="px-4 py-3">—</td>
@@ -125,7 +127,7 @@ export function ScoringRulesContent() {
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+3+1</td>
                 <td className="px-4 py-3">
-                  Točan 90′, točan ukupni neriješen rezultat u produžetku (npr. 1–1 → 2–2),
+                  Neriješeno u 90′, točan ukupni neriješen rezultat u produžetku (npr. 1–1 → 2–2),
                   pobjednik na penalima
                 </td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.exactDifferentDrawOrWin}</td>
@@ -134,7 +136,7 @@ export function ScoringRulesContent() {
               <tr className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium">+3+2</td>
                 <td className="px-4 py-3">
-                  Točan 90′, točan ukupni neriješen rezultat u produžetku (npr. 1–1 → 2–2),
+                  Neriješeno u 90′, točan ukupni neriješen rezultat u produžetku (npr. 1–1 → 2–2),
                   točan rezultat na penalima
                 </td>
                 <td className="px-4 py-3">{KNOCKOUT_ET_POINTS.exactDifferentDrawOrWin}</td>
@@ -158,58 +160,64 @@ export function ScoringRulesContent() {
         <h2 className="text-lg font-semibold text-slate-900">Primjeri</h2>
         <ul className="mt-4 grid gap-4 lg:grid-cols-2">
           <RuleExample
-            title="+1 — samo ishod produžetka"
-            actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
-            pick="90′ 1–1, prod. 2–2 (krivi rezultat, ali neriješeno u produžetku)"
-            points="90′: 4 b · Prod.: +1 · Ukupni bonus: 1"
+            title="+2+1+1 — neriješeno u 90′, produžetku i pobjednik na pen."
+            actual="1–1 → prod. 1–1 → pen. 4–5 gost"
+            pick="90′ 2–2, prod. 2–2, pen. 3–4"
+            points="90′: 2 b · Prod.: +1 · Pen.: +1 · Ukupno: 4"
           />
           <RuleExample
-            title="+2+2 — ukupni rezultat nakon produžetka isti kao u 90′"
+            title="+2+2 — točno neriješeno u 90′ i produžetku"
             actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
             pick="90′ 1–1, prod. 1–1, pen. 4–3"
-            points="90′: 4 b · Prod.: +2 · Pen.: +2 · Ukupni bonus: 4"
+            points="90′: 4 b · Prod.: +2 · Pen.: +2 · Ukupno: 8"
+          />
+          <RuleExample
+            title="+1 — samo ishod produžetka"
+            actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
+            pick="90′ 2–2, prod. 2–2 (krivi rezultat, ali neriješeno u produžetku)"
+            points="90′: 2 b · Prod.: +1 · Ukupni bonus: 1"
           />
           <RuleExample
             title="+2+1 — isti ukupni rezultat u produžetku, krivi penali"
             actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
             pick="90′ 1–1, prod. 1–1, pen. 5–4 (točan pobjednik, krivi rezultat)"
-            points="90′: 4 b · Prod.: +2 · Pen.: +1 · Ukupni bonus: 3"
+            points="90′: 4 b · Prod.: +2 · Pen.: +1 · Ukupno: 7"
           />
           <RuleExample
             title="+1+1 — neriješeno u produžetku, pobjednik na penalima"
             actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
-            pick="90′ 1–1, prod. 2–2, pen. 5–4 (krivi rezultat penala, točan pobjednik)"
-            points="90′: 4 b · Prod.: +1 · Pen.: +1 · Ukupni bonus: 2"
+            pick="90′ 2–2, prod. 2–2, pen. 5–4 (krivi rezultat penala, točan pobjednik)"
+            points="90′: 2 b · Prod.: +1 · Pen.: +1 · Ukupno: 4"
           />
           <RuleExample
             title="+1+2 — krivi produžetak, točni penali"
             actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
             pick="90′ 1–1, prod. 2–2, pen. 4–3"
-            points="90′: 4 b · Prod.: +1 · Pen.: +2 · Ukupni bonus: 3"
+            points="90′: 4 b · Prod.: +1 · Pen.: +2 · Ukupno: 7"
           />
           <RuleExample
             title="+3 — pobjeda u produžetku, bez penala"
             actual="1–1 → prod. 2–1 domaćin"
             pick="90′ 1–1, prod. 3–1 (krivi rezultat, ali točna pobjeda domaćina)"
-            points="90′: 4 b · Prod.: +3 · Ukupni bonus: 3"
+            points="90′: 4 b · Prod.: +3 · Ukupno: 7"
           />
           <RuleExample
             title="+3+2 — drugi neriješeni ukupni rezultat u produžetku"
             actual="1–1 → prod. 2–2 → pen. 5–4 domaćin"
             pick="90′ 1–1, prod. 2–2, pen. 5–4"
-            points="90′: 4 b · Prod.: +3 · Pen.: +2 · Ukupni bonus: 5"
+            points="90′: 4 b · Prod.: +3 · Pen.: +2 · Ukupno: 9"
           />
           <RuleExample
             title="+3+1 — točan produžetak, krivi penali"
             actual="1–1 → prod. 2–2 → pen. 5–4 domaćin"
             pick="90′ 1–1, prod. 2–2, pen. 6–5 (točan pobjednik, krivi rezultat)"
-            points="90′: 4 b · Prod.: +3 · Pen.: +1 · Ukupni bonus: 4"
+            points="90′: 4 b · Prod.: +3 · Pen.: +1 · Ukupno: 8"
           />
           <RuleExample
-            title="Bez bonusa za prod./pen. bez točnog 90′"
+            title="Bez bonusa — nije prognozirano neriješeno u 90′"
             actual="1–1 → prod. 1–1 → pen. 4–3 domaćin"
-            pick="90′ 2–0, prod. 1–1, pen. 4–3"
-            points="90′: 0 b · Prod.: 0 · Pen.: 0 (bonus zahtijeva točan 90′)"
+            pick="90′ 2–1, prod. 1–1, pen. 4–3"
+            points="90′: 0 b · Prod.: 0 · Pen.: 0 (bonus zahtijeva neriješeno u 90′)"
           />
         </ul>
       </section>

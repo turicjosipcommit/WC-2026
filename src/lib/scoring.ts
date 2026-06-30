@@ -143,12 +143,30 @@ export function countExactScorePhases(prediction: {
   return count;
 }
 
-function isExact90Prediction(
-  prediction: { pred_home: number; pred_away: number },
-  home90: number,
-  away90: number
+function isDrawScoreline(home: number, away: number) {
+  return matchOutcome(home, away) === "draw";
+}
+
+/** ET/pen bonuses require a draw prediction at 90′ when the match went to extra time. */
+function eligibleForKnockoutEtPenBonus(
+  prediction: Pick<PredictionScoringInput, "pred_home" | "pred_away">,
+  match: MatchScoringSnapshot
 ) {
-  return prediction.pred_home === home90 && prediction.pred_away === away90;
+  if (!match.went_to_extra_time) {
+    return false;
+  }
+
+  const home90 = match.home_score_90 ?? match.home_score;
+  const away90 = match.away_score_90 ?? match.away_score;
+  if (home90 == null || away90 == null) {
+    return false;
+  }
+
+  if (!isDrawScoreline(home90, away90)) {
+    return false;
+  }
+
+  return isDrawScoreline(prediction.pred_home, prediction.pred_away);
 }
 
 function scoreExtraTimePoints(
@@ -165,9 +183,9 @@ function scoreExtraTimePoints(
     away_score_et: number | null;
     went_to_penalties: boolean;
   },
-  exact90: boolean
+  eligibleForBonus: boolean
 ): number | null {
-  if (!exact90) {
+  if (!eligibleForBonus) {
     return 0;
   }
 
@@ -238,13 +256,13 @@ function scorePenaltyPoints(
     away_score_pen: number | null;
     went_to_penalties: boolean;
   },
-  exact90: boolean
+  eligibleForBonus: boolean
 ): number | null {
   if (!match.went_to_penalties) {
     return null;
   }
 
-  if (!exact90) {
+  if (!eligibleForBonus) {
     return 0;
   }
 
@@ -315,8 +333,7 @@ export function computePredictionPhasePoints(
 ): PredictionPhasePoints {
   const home90 = match.home_score_90 ?? match.home_score;
   const away90 = match.away_score_90 ?? match.away_score;
-  const exact90 =
-    home90 != null && away90 != null && isExact90Prediction(prediction, home90, away90);
+  const eligibleForBonus = eligibleForKnockoutEtPenBonus(prediction, match);
 
   return {
     points_awarded:
@@ -324,9 +341,9 @@ export function computePredictionPhasePoints(
         ? calculatePoints(prediction.pred_home, prediction.pred_away, home90, away90)
         : null,
     et_points_awarded: match.went_to_extra_time
-      ? scoreExtraTimePoints(prediction, match, exact90)
+      ? scoreExtraTimePoints(prediction, match, eligibleForBonus)
       : null,
-    pen_points_awarded: scorePenaltyPoints(prediction, match, exact90),
+    pen_points_awarded: scorePenaltyPoints(prediction, match, eligibleForBonus),
   };
 }
 

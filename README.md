@@ -14,7 +14,7 @@ A simple friend-group fantasy app for the FIFA World Cup 2026. Everyone predicts
 
 ### Scoring
 
-Regular time uses 4 / 3 / 2 / 1 / 0 points (exact score down to one team score). Knockout matches can earn **additional** ET and penalty bonuses when your 90′ pick is exact — see the **Scoring** page in the app for full rules and examples.
+Regular time uses 4 / 3 / 2 / 1 / 0 points (exact score down to one team score). Knockout matches can earn **additional** ET and penalty bonuses when your 90′ pick is a **draw** and the match goes to extra time — see the **Scoring** page in the app for full rules and examples.
 
 ## Setup
 
