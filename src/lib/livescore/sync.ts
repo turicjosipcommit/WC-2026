@@ -1,3 +1,7 @@
+import {
+  deriveScoreAt90FromGoals,
+  shouldReconcileScoreAt90,
+} from "@/lib/match-score-from-goals";
 import { scorePredictionPhases } from "@/lib/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Match } from "@/lib/types";
@@ -10,8 +14,6 @@ import type { LiveScoreNormalizedEvent } from "./types";
 function extractMatchScores(event: LiveScoreNormalizedEvent) {
   const homeCurrent = event.homeScore ?? null;
   const awayCurrent = event.awayScore ?? null;
-  const home90 = event.homeScore90 ?? homeCurrent;
-  const away90 = event.awayScore90 ?? awayCurrent;
   const homePen = event.homeScorePen ?? null;
   const awayPen = event.awayScorePen ?? null;
   const wentToPenalties = homePen != null && awayPen != null;
@@ -20,6 +22,10 @@ function extractMatchScores(event: LiveScoreNormalizedEvent) {
     (event.homeScoreEt != null && event.awayScoreEt != null) ||
     event.statusCode.toUpperCase() === "AET";
 
+  const home90 =
+    event.homeScore90 ?? (wentToExtraTime ? null : homeCurrent);
+  const away90 =
+    event.awayScore90 ?? (wentToExtraTime ? null : awayCurrent);
   return {
     home_score: homeCurrent,
     away_score: awayCurrent,
@@ -158,7 +164,7 @@ async function syncMatchGoals(matchId: string, livescoreEventId: number) {
   }
 
   if (goals.length === 0) {
-    return 0;
+    return { count: 0, goals };
   }
 
   const { error: insertError } = await supabase.from("match_goals").insert(
@@ -172,7 +178,49 @@ async function syncMatchGoals(matchId: string, livescoreEventId: number) {
     throw new Error(insertError.message);
   }
 
-  return goals.length;
+  return { count: goals.length, goals };
+}
+
+async function reconcileScoreAt90FromGoals(
+  match: Match,
+  goals: ReturnType<typeof parseGoalsFromIncidents>
+): Promise<{ match: Match; changed: boolean }> {
+  if (match.status !== "finished" || !match.went_to_extra_time) {
+    return { match, changed: false };
+  }
+
+  if (!shouldReconcileScoreAt90(match, goals)) {
+    return { match, changed: false };
+  }
+
+  const derived = deriveScoreAt90FromGoals(goals);
+  if (!derived) {
+    return { match, changed: false };
+  }
+
+  if (
+    match.home_score_90 === derived.home &&
+    match.away_score_90 === derived.away
+  ) {
+    return { match, changed: false };
+  }
+
+  const supabase = createAdminClient();
+  const { data: updated, error } = await supabase
+    .from("matches")
+    .update({
+      home_score_90: derived.home,
+      away_score_90: derived.away,
+    })
+    .eq("id", match.id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { match: updated as Match, changed: true };
 }
 
 async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
@@ -215,18 +263,30 @@ async function applyEventUpdate(event: LiveScoreNormalizedEvent) {
     existing?.went_to_penalties !== updated.went_to_penalties;
 
   let goalsSynced = 0;
+  let matchForScoring = updated as Match;
   if (isLive || isFinished) {
-    goalsSynced = await syncMatchGoals(updated.id, event.id);
+    const goalSync = await syncMatchGoals(updated.id, event.id);
+    goalsSynced = goalSync.count;
+
+    if (isFinished && goalSync.goals.length > 0) {
+      const reconciled = await reconcileScoreAt90FromGoals(matchForScoring, goalSync.goals);
+      matchForScoring = reconciled.match;
+    }
   }
+
+  const scoreAt90Reconciled =
+    existing?.home_score_90 !== matchForScoring.home_score_90 ||
+    existing?.away_score_90 !== matchForScoring.away_score_90;
 
   if (isFinished) {
     const shouldScore =
       !wasFinished ||
       scoresChanged ||
+      scoreAt90Reconciled ||
       (await hasUnscoredPredictions(updated.id));
 
     if (shouldScore) {
-      const scored = await scoreMatchPredictions(updated as Match);
+      const scored = await scoreMatchPredictions(matchForScoring);
       return { updated: true, scored, goalsSynced };
     }
   }

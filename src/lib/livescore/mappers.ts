@@ -81,8 +81,8 @@ export function normalizeEvent(
   const awayScoreEt = parseOptionalInt(event.Tr2ET);
   const homeScorePen = parseOptionalInt(event.Trp1);
   const awayScorePen = parseOptionalInt(event.Trp2);
-  const homeScore90 = parseOptionalInt(event.Trh1) ?? homeScore;
-  const awayScore90 = parseOptionalInt(event.Trh2) ?? awayScore;
+  const homeScore90 = parseOptionalInt(event.Trh1);
+  const awayScore90 = parseOptionalInt(event.Trh2);
 
   return {
     id: liveScoreEventIdToDbId(event.Eid),
